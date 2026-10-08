@@ -11,16 +11,20 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
-class OnecGradlePluginPluginTest {
-    @Test fun `plugin registers task`() {
-        val project = ProjectBuilder.builder().build()
-        project.plugins.apply("io.github.onec-devops.greeting")
+class OnecPluginTest {
 
-        assertNotNull(project.tasks.findByName("greeting"))
+    @ParameterizedTest
+    @ValueSource(strings = ["onecInstallations"])
+    fun `registers its tasks when applied`(task: String) {
+        val project = ProjectBuilder.builder().build()
+
+        project.plugins.apply("io.github.onec-devops.onec")
+
+        assertNotNull(project.tasks.findByName(task))
     }
 
     @ParameterizedTest
-    @ValueSource(strings = [OnecGradlePluginPlugin.MINIMUM_GRADLE_VERSION, "${OnecGradlePluginPlugin.MINIMUM_GRADLE_VERSION}-rc-1", "9.8.0"])
+    @ValueSource(strings = [OnecPlugin.MINIMUM_GRADLE_VERSION, "${OnecPlugin.MINIMUM_GRADLE_VERSION}-rc-1", "9.8.0"])
     fun `accepts Gradle of the minimum version or newer`(version: String) {
         val current = GradleVersion.version(version)
 
@@ -32,6 +36,6 @@ class OnecGradlePluginPluginTest {
 
         val failure = assertFailsWith<GradleException> { requireSupportedGradle(current) }
 
-        assertEquals("The onec plugin requires Gradle ${OnecGradlePluginPlugin.MINIMUM_GRADLE_VERSION} or newer, this was 8.14.3", failure.message)
+        assertEquals("The onec plugin requires Gradle ${OnecPlugin.MINIMUM_GRADLE_VERSION} or newer, this was 8.14.3", failure.message)
     }
 }

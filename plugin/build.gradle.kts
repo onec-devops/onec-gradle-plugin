@@ -33,14 +33,13 @@ kotlin {
 }
 
 gradlePlugin {
-    val greeting = plugins.create("greeting") {
-        id = "io.github.onec-devops.greeting"
-        implementationClass = "io.github.onecdevops.OnecGradlePluginPlugin"
+    plugins.create("onec") {
+        id = "io.github.onec-devops.onec"
+        implementationClass = "io.github.onecdevops.OnecPlugin"
     }
 }
 
-val functionalTestSourceSet = sourceSets.create("functionalTest") {
-}
+val functionalTestSourceSet = sourceSets.create("functionalTest")
 
 configurations["functionalTestImplementation"].extendsFrom(configurations["testImplementation"])
 configurations["functionalTestRuntimeOnly"].extendsFrom(configurations["testRuntimeOnly"])
@@ -61,4 +60,8 @@ tasks.named<Task>("check") {
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
+}
+
+tasks.validatePlugins {
+    enableStricterValidation = true
 }
