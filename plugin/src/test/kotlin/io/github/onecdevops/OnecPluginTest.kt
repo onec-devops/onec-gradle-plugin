@@ -14,7 +14,7 @@ import kotlin.test.assertNotNull
 class OnecPluginTest {
 
     @ParameterizedTest
-    @ValueSource(strings = ["onecInstallations"])
+    @ValueSource(strings = ["onecBuild", "onecCreateInfobase", "onecInstallations"])
     fun `registers its tasks when applied`(task: String) {
         val project = ProjectBuilder.builder().build()
 

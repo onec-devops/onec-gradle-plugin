@@ -6,8 +6,8 @@ import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.io.TempDir
 
 /**
- * A test that runs builds of a project with the plugin applied. The builds look for the real
- * platform and fail without an installed one; a machine that keeps it outside the standard
+ * A test that runs builds of a project with the plugin applied. The builds call the real ibcmd
+ * and fail without an installed platform; a machine that keeps it outside the standard
  * directories points ONEC_HOME to it.
  */
 abstract class FunctionalTest {
@@ -19,7 +19,7 @@ abstract class FunctionalTest {
     protected val settingsFile by lazy { projectDir.resolve("settings.gradle") }
 
     @BeforeTest fun createProject() {
-        settingsFile.writeText("rootProject.name = 'main'")
+        settingsFile.writeText("rootProject.name = 'sample'")
         buildFile.writeText("""
             plugins {
                 id('io.github.onec-devops.onec')
@@ -39,5 +39,9 @@ abstract class FunctionalTest {
         runner.withProjectDir(projectDir)
         System.getProperty("testGradleVersion")?.let { runner.withGradleVersion(it) }
         return runner
+    }
+
+    protected fun copySources(resource: String, target: String) {
+        File(javaClass.getResource("/$resource")!!.toURI()).copyRecursively(projectDir.resolve(target))
     }
 }

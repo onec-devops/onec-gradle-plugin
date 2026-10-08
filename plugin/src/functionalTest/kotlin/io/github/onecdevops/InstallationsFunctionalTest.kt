@@ -3,6 +3,7 @@ package io.github.onecdevops
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.Test
+import org.gradle.testkit.runner.TaskOutcome
 
 class InstallationsFunctionalTest: FunctionalTest() {
 
@@ -21,5 +22,14 @@ class InstallationsFunctionalTest: FunctionalTest() {
         val result = runner("onecInstallations", "-Ponec.installations.paths=$home").build()
 
         assertEquals("onec.installations.paths", selectedInstallation.find(result.output)?.groupValues?.get(2))
+    }
+
+    @Test fun `builds with an installation given in the Gradle property`() {
+        copySources("configuration", "src")
+        val home = selectedInstallation.find(runner("onecInstallations").build().output)!!.groupValues[1]
+
+        val result = runner("onecBuild", "-Ponec.installations.paths=$home").build()
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":onecBuild")?.outcome)
     }
 }
