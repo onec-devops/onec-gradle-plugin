@@ -1,4 +1,4 @@
-package org.example
+package io.github.onecdevops
 
 import java.io.File
 import kotlin.test.assertTrue
@@ -18,7 +18,7 @@ class OnecGradlePluginPluginFunctionalTest {
         settingsFile.writeText("")
         buildFile.writeText("""
             plugins {
-                id('org.example.greeting')
+                id('io.github.onec-devops.greeting')
             }
         """.trimIndent())
 
@@ -29,6 +29,6 @@ class OnecGradlePluginPluginFunctionalTest {
         runner.withProjectDir(projectDir)
         val result = runner.build()
 
-        assertTrue(result.output.contains("Hello from plugin 'org.example.greeting'"))
+        assertTrue(result.output.contains("Hello from plugin 'io.github.onec-devops.greeting'"))
     }
 }

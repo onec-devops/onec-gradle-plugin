@@ -15,8 +15,8 @@ dependencies {
 
 gradlePlugin {
     val greeting = plugins.create("greeting") {
-        id = "org.example.greeting"
-        implementationClass = "org.example.OnecGradlePluginPlugin"
+        id = "io.github.onec-devops.greeting"
+        implementationClass = "io.github.onecdevops.OnecGradlePluginPlugin"
     }
 }
 
