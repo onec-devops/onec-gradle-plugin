@@ -27,6 +27,7 @@ class OnecGradlePluginPluginFunctionalTest {
         runner.withPluginClasspath()
         runner.withArguments("greeting")
         runner.withProjectDir(projectDir)
+        System.getProperty("testGradleVersion")?.let { runner.withGradleVersion(it) }
         val result = runner.build()
 
         assertTrue(result.output.contains("Hello from plugin 'io.github.onec-devops.greeting'"))
