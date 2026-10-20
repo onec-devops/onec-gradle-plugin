@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_call:
 
 permissions:
   contents: read
@@ -28,5 +29,35 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v6
-      # The functional tests call the real ibcmd, and the runners have no 1C:Enterprise platform.
+      # The functional tests need the platform, they run in the functional-test job.
       - run: ./gradlew build -x functionalTest
+
+  functional-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        onec-version: [8.3.22.2557, 8.3.25.1633, 8.3.27.2342]
+    # The image of the platform from https://github.com/onec-devops/onec-docker
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/1cv8-server:${{ matrix.onec-version }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+      # The workspace belongs to the runner user, which has no entry in /etc/passwd of the
+      # image, and the platform crashes for such a user.
+      options: --user root
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v6
+      - run: ./gradlew functionalTest

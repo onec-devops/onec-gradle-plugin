@@ -5,7 +5,14 @@ on:
     types: [published]
 
 jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+    permissions:
+      contents: read
+      packages: read
+
   release:
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -18,8 +25,6 @@ jobs:
           distribution: temurin
           java-version: 17
       - uses: gradle/actions/setup-gradle@v6
-      # The functional tests need the platform, so they are run locally before the release.
-      - run: ./gradlew build -x functionalTest
       - run: ./gradlew publishPlugins
         env:
           GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
