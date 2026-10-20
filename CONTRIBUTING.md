@@ -49,7 +49,8 @@ Each functional test creates a project in a temporary directory, copies a fixtur
 runs a build with Gradle TestKit; four tests run at a time.
 
 A fixture is an XML dump in the form the platform exports it; after editing one by hand, load it
-with `ibcmd` and export it again.
+with `ibcmd` and export it again. The fixtures are exported by the oldest platform version under
+test, with its compatibility mode, because a platform does not load a dump made by a newer one.
 
 The functional tests run their builds on the same Gradle version as the build itself. To run them
 on another one, pass it as a property:
