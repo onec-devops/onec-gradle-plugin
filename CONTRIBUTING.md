@@ -42,8 +42,6 @@ the real `ibcmd` and fail without it. If the platform is not in a standard locat
 
 `./gradlew build` compiles and validates the plugin and runs the unit and the functional tests.
 `./gradlew test` runs only the unit tests, `./gradlew functionalTest` only the functional ones.
-CI runs the unit tests and validates the plugin on Linux and Windows; it has no platform, so run
-the functional tests locally before sending a change.
 
 Each functional test creates a project in a temporary directory, copies a fixture into it and
 runs a build with Gradle TestKit; four tests run at a time.
@@ -58,6 +56,19 @@ on another one, pass it as a property:
 ```
 ./gradlew functionalTest -PtestGradleVersion=9.0.0
 ```
+
+## CI
+
+The [Build](.github/workflows/build.yml) workflow runs on pushes to `main` and on pull requests.
+It runs the unit tests and validates the plugin on Linux and Windows, and runs the functional
+tests on Linux in the platform images of [onec-docker](https://github.com/onec-devops/onec-docker),
+one job for each version in `matrix.onec-version`. The [Release](.github/workflows/release.yml)
+workflow runs the Build workflow and publishes the plugin only if it passes.
+
+The images are the private packages `1cv8-server` of the repository owner in the GitHub Container
+registry, for example `ghcr.io/onec-devops/1cv8-server:8.3.25.1633`. The repository gets read
+access to them under "Manage Actions access" in the package settings. In a fork the workflow
+takes the images of the fork owner, built by a fork of onec-docker.
 
 ## License
 
