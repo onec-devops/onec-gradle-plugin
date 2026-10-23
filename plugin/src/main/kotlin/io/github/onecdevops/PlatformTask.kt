@@ -5,7 +5,6 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Internal
 import org.gradle.work.DisableCachingByDefault
-import java.io.File
 
 /** A task that needs to find the installed platform. */
 @DisableCachingByDefault(because = "Abstract super-class, not to be instantiated directly")
@@ -26,12 +25,8 @@ abstract class PlatformTask: DefaultTask() {
     abstract val windowsProgramDirs: ListProperty<String>
 
     internal fun installationLocations(): List<InstallationLocation> =
-        installationPaths.get().map { InstallationLocation(File(it), INSTALLATION_PATHS_PROPERTY) } +
-            installationVariables.get().mapNotNull { name ->
-                System.getenv(name)?.takeIf { it.isNotBlank() }
-                    ?.let { InstallationLocation(File(it), "environment variable $name") }
-            } +
-            PlatformInstallation.standardLocations(windowsProgramDirs.get())
+        locationsFrom(installationPaths.get(), INSTALLATION_PATHS_PROPERTY, installationVariables.get(),
+            PlatformInstallations.standardLocations(windowsProgramDirs.get()))
 
     companion object {
         const val INSTALLATION_PATHS_PROPERTY = "onec.installations.paths"

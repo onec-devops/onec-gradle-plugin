@@ -15,10 +15,15 @@ class OnecPlugin: Plugin<Project> {
 
         val providers = project.providers
         val installationPaths = providers.gradleProperty(PlatformTask.INSTALLATION_PATHS_PROPERTY).orElse("")
-            .map { PlatformInstallation.parseList(it) }
+            .map { parseList(it) }
         val installationVariables = providers.gradleProperty(PlatformTask.INSTALLATION_VARIABLES_PROPERTY)
             .orElse(PlatformTask.DEFAULT_INSTALLATION_VARIABLE)
-            .map { PlatformInstallation.parseList(it) }
+            .map { parseList(it) }
+        val edtInstallationPaths = providers.gradleProperty(UsesEdt.INSTALLATION_PATHS_PROPERTY).orElse("")
+            .map { parseList(it) }
+        val edtInstallationVariables = providers.gradleProperty(UsesEdt.INSTALLATION_VARIABLES_PROPERTY)
+            .orElse(UsesEdt.DEFAULT_INSTALLATION_VARIABLE)
+            .map { parseList(it) }
         project.tasks.withType(PlatformTask::class.java).configureEach { task ->
             task.platformVersion.set(onec.platformVersion)
             task.installationPaths.set(installationPaths)
@@ -26,9 +31,15 @@ class OnecPlugin: Plugin<Project> {
             task.windowsProgramDirs.add(providers.environmentVariable("ProgramFiles").orElse("C:\\Program Files"))
             task.windowsProgramDirs.add(providers.environmentVariable("ProgramFiles(x86)").orElse("C:\\Program Files (x86)"))
         }
+        project.tasks.withType(UsesEdt::class.java).configureEach { task ->
+            task.edtVersion.set(onec.edtVersion)
+            task.edtInstallationPaths.set(edtInstallationPaths)
+            task.edtInstallationVariables.set(edtInstallationVariables)
+            task.localAppData.set(providers.environmentVariable("LOCALAPPDATA").orElse(""))
+        }
         project.tasks.register("onecInstallations", OnecInstallationsTask::class.java) { task ->
             task.group = "help"
-            task.description = "Displays the detected 1C:Enterprise platform installations."
+            task.description = "Displays the detected 1C:Enterprise platform and 1C:EDT installations."
         }
 
         val outputDirectory = project.layout.buildDirectory.dir("onec")

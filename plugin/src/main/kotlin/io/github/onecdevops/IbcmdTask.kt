@@ -18,7 +18,7 @@ abstract class IbcmdTask: PlatformTask() {
     @get:Input
     val resolvedPlatformVersion: String
         get() = platformVersion.orNull
-            ?.let { PlatformInstallation.select(it, PlatformInstallation.discover(installationLocations())) }
+            ?.let { PlatformInstallations.select(it, PlatformInstallations.discover(installationLocations())) }
             ?.version ?: ""
 
     @get:Inject
@@ -28,38 +28,50 @@ abstract class IbcmdTask: PlatformTask() {
     protected abstract val fileSystemOperations: FileSystemOperations
 
     protected fun ibcmd(vararg args: String) {
-        val executable = findIbcmd()
+        run(findIbcmd(), "ibcmd ${args.takeWhile { !it.startsWith("--") }.joinToString(" ")}", args.toList())
+    }
+
+    /** Runs [executable] and fails with its output, naming the [command], when it exits with an error; returns the output. */
+    protected fun run(executable: File, command: String, args: List<String>): String {
         val output = ByteArrayOutputStream()
         val result = execOperations.exec { spec ->
             spec.executable = executable.path
-            spec.args = args.toList()
+            spec.args = args
             spec.standardOutput = output
             spec.errorOutput = output
             spec.isIgnoreExitValue = true
         }
         val text = decodeProcessOutput(output.toByteArray()).trim()
         if (result.exitValue != 0) {
-            throw GradleException("ibcmd ${args.takeWhile { !it.startsWith("--") }.joinToString(" ")} " +
-                "failed with exit code ${result.exitValue}:\n$text")
+            throw GradleException("$command failed with exit code ${result.exitValue}:\n$text")
         }
         logger.info(text)
+        return text
     }
 
     private fun findIbcmd(): File {
         val requested = platformVersion.orNull ?: throw GradleException("onec.platformVersion is not set")
         val locations = installationLocations()
-        val installation = PlatformInstallation.select(requested, PlatformInstallation.discover(locations))
-            ?: throw GradleException(
-                "1C:Enterprise platform $requested with ibcmd not found, looked in:\n" +
-                    locations.joinToString("\n") { "  ${it.path}  (${it.source})" } +
-                    "\nList the installations in the Gradle property $INSTALLATION_PATHS_PROPERTY, or name " +
-                    "the environment variables that point to them in $INSTALLATION_VARIABLES_PROPERTY " +
-                    "($DEFAULT_INSTALLATION_VARIABLE by default).")
-        return installation.ibcmd
+        val installation = PlatformInstallations.select(requested, PlatformInstallations.discover(locations))
+            ?: throw installationNotFound("1C:Enterprise platform $requested with ibcmd", locations,
+                INSTALLATION_PATHS_PROPERTY, INSTALLATION_VARIABLES_PROPERTY, DEFAULT_INSTALLATION_VARIABLE)
+        return installation.executable
     }
 }
 
-/** ibcmd is expected to write UTF-8; anything else is read in the [fallback] encoding. */
+internal fun installationNotFound(
+    what: String,
+    locations: List<InstallationLocation>,
+    pathsProperty: String,
+    variablesProperty: String,
+    defaultVariable: String
+) = GradleException(
+    "$what not found, looked in:\n" +
+        locations.joinToString("\n") { "  ${it.path}  (${it.source})" } +
+        "\nList the installations in the Gradle property $pathsProperty, or name " +
+        "the environment variables that point to them in $variablesProperty ($defaultVariable by default).")
+
+/** ibcmd and 1cedtcli are expected to write UTF-8; anything else is read in the [fallback] encoding. */
 internal fun decodeProcessOutput(
     bytes: ByteArray,
     fallback: Charset = Charset.forName(System.getProperty("native.encoding") ?: Charset.defaultCharset().name())

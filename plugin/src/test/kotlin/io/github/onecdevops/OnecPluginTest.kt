@@ -24,9 +24,15 @@ class OnecPluginTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = [OnecPlugin.MINIMUM_GRADLE_VERSION, "${OnecPlugin.MINIMUM_GRADLE_VERSION}-rc-1", "9.8.0"])
+    @ValueSource(strings = [OnecPlugin.MINIMUM_GRADLE_VERSION, "9.8.0"])
     fun `accepts Gradle of the minimum version or newer`(version: String) {
         val current = GradleVersion.version(version)
+
+        assertDoesNotThrow { requireSupportedGradle(current) }
+    }
+
+    @Test fun `accepts a release candidate of the minimum version`() {
+        val current = GradleVersion.version("${OnecPlugin.MINIMUM_GRADLE_VERSION}-rc-1")
 
         assertDoesNotThrow { requireSupportedGradle(current) }
     }

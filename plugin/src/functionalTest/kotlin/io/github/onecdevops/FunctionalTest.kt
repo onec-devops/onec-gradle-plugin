@@ -26,7 +26,7 @@ abstract class FunctionalTest {
             }
 
             onec {
-                platformVersion = '8.3'
+                platformVersion = '$PLATFORM_VERSION'
             }
         """.trimIndent())
     }
@@ -43,5 +43,43 @@ abstract class FunctionalTest {
 
     protected fun copySources(resource: String, target: String) {
         File(javaClass.getResource("/$resource")!!.toURI()).copyRecursively(projectDir.resolve(target))
+    }
+
+    /** Home of the platform installation that onecInstallations marks. */
+    protected fun selectedPlatformHome(): String =
+        selectedPlatform.find(runner("onecInstallations").build().output)!!.groups["home"]!!.value
+
+    /** Loads the configuration [file] into a new infobase and exports it to XML, to see what was built. */
+    protected fun exportToXml(file: File): File {
+        val home = File(selectedPlatformHome())
+        val ibcmd = listOf("bin/ibcmd.exe", "ibcmd").map { home.resolve(it) }.first { it.isFile }
+        val work = projectDir.resolve("export")
+        val infobase = arrayOf("--data=${work.resolve("data")}", "--db-path=${work.resolve("ib")}")
+        for (args in listOf(
+            arrayOf("infobase", "create", *infobase),
+            arrayOf("infobase", "config", "load", *infobase, file.path),
+            arrayOf("infobase", "config", "export", *infobase, work.resolve("xml").path))) {
+            val process = ProcessBuilder(ibcmd.path, *args).redirectErrorStream(true).start()
+            val output = process.inputStream.readBytes().decodeToString()
+            check(process.waitFor() == 0) { "ibcmd ${args.take(3).joinToString(" ")} failed:\n$output" }
+        }
+        return work.resolve("xml")
+    }
+
+    companion object {
+        /** The platform the tests ask for: `-PtestPlatformVersion`, by default any build of 8.3. */
+        val PLATFORM_VERSION: String = System.getProperty("testPlatformVersion") ?: "8.3"
+
+        /** The 1C:EDT the tests that need it ask for: `-PtestEdtVersion`, by default any build of 2026. */
+        val EDT_VERSION: String = System.getProperty("testEdtVersion") ?: "2026"
+
+        // The marked platform and 1C:EDT lines of onecInstallations.
+        val selectedPlatform = selectedInstallation(PLATFORM_VERSION)
+        val selectedEdt = selectedInstallation(EDT_VERSION)
+
+        /** The line of onecInstallations marking the installation of [requested]: its version, home and the setting it comes from. */
+        private fun selectedInstallation(requested: String) = Regex(
+            """^\* (?<version>${Regex.escape(requested)}(?:\.\S+)?) {3,}(?<home>\S.*?) {3,}(?<source>\S.*)$""",
+            RegexOption.MULTILINE)
     }
 }
