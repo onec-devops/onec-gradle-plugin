@@ -88,6 +88,7 @@ class BuildFunctionalTest: FunctionalTest() {
         val result = runner("onecBuild").buildAndFail()
 
         assertContains(result.output, "ibcmd infobase config import failed with exit code")
+        assertContains(result.output, "Configuration.xml")
     }
 
     @Test fun `leaves no temporary files after a build`() {

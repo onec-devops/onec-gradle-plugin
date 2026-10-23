@@ -41,8 +41,8 @@ gradlePlugin {
         id = "io.github.onec-devops.onec"
         implementationClass = "io.github.onecdevops.OnecPlugin"
         displayName = "Onec Gradle Plugin"
-        description = "Gradle plugin for 1C:Enterprise development. Builds configurations, extensions, external data processors and reports with ibcmd."
-        tags = listOf("onec", "1c", "1cv8", "1c-enterprise", "bsl", "ibcmd")
+        description = "Gradle plugin for building 1C:Enterprise artifacts from XML files and 1C:EDT projects."
+        tags = listOf("1c", "1c-edt", "1c-enterprise", "1cv8", "bsl", "ibcmd", "onec")
 
         compatibility {
             features {
@@ -67,6 +67,10 @@ val functionalTest = tasks.register<Test>("functionalTest") {
     useJUnitPlatform()
     // -PtestGradleVersion=9.0.0 runs the test builds on that Gradle instead of the current one.
     providers.gradleProperty("testGradleVersion").orNull?.let { systemProperty("testGradleVersion", it) }
+    // -PtestPlatformVersion=8.3.25.1633 and -PtestEdtVersion=2026.1.3 make the tests ask for that platform
+    // and 1C:EDT instead of any build of 8.3 and of 2026.
+    providers.gradleProperty("testPlatformVersion").orNull?.let { systemProperty("testPlatformVersion", it) }
+    providers.gradleProperty("testEdtVersion").orNull?.let { systemProperty("testEdtVersion", it) }
 }
 
 gradlePlugin.testSourceSets.add(functionalTestSourceSet)
