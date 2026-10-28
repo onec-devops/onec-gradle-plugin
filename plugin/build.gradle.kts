@@ -41,8 +41,8 @@ gradlePlugin {
         id = "io.github.onec-devops.onec"
         implementationClass = "io.github.onecdevops.OnecPlugin"
         displayName = "Onec Gradle Plugin"
-        description = "Gradle plugin for building 1C:Enterprise artifacts from XML files and 1C:EDT projects."
-        tags = listOf("1c", "1c-edt", "1c-enterprise", "1cv8", "bsl", "ibcmd", "onec")
+        description = "Gradle support for 1C:Enterprise development."
+        tags = listOf("1c", "1c-edt", "1c-enterprise", "1cv8", "onec")
 
         compatibility {
             features {
