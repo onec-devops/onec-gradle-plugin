@@ -134,8 +134,8 @@ my-project/
 
 | Свойство | По умолчанию | Описание | Пример |
 |---|---|---|---|
-| `onec.installations.paths` | | Пути к установкам платформы или к каталогам с установками разных версий, через запятую. | `D:/1cv8,E:/1C/8.3.25.1633` |
-| `onec.installations.fromEnv` | `ONEC_HOME` | Имена переменных окружения с такими путями, через запятую. | `ONEC_HOME,V8_HOME` |
+| `onec.platform.installations.paths` | | Пути к установкам платформы или к каталогам с установками разных версий, через запятую. | `D:/1cv8,E:/1C/8.3.25.1633` |
+| `onec.platform.installations.fromEnv` | `ONEC_HOME` | Имена переменных окружения с такими путями, через запятую. | `ONEC_HOME,V8_HOME` |
 | `onec.edt.installations.paths` | | То же для 1С:EDT. | `D:/1C/EDT` |
 | `onec.edt.installations.fromEnv` | `EDT_HOME` | То же для 1С:EDT. | `EDT_HOME,EDT_2026` |
 

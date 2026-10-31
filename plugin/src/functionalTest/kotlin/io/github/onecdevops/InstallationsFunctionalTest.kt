@@ -23,8 +23,8 @@ class InstallationsFunctionalTest: FunctionalTest() {
     @Test fun `selects a platform installation given in the Gradle property`() {
         val home = selectedPlatformHome()
 
-        val result = runner("onecInstallations", "-Ponec.installations.paths=$home").build()
+        val result = runner("onecInstallations", "-Ponec.platform.installations.paths=$home").build()
 
-        assertEquals("onec.installations.paths", selectedPlatform.find(result.output)?.groups?.get("source")?.value)
+        assertEquals("onec.platform.installations.paths", selectedPlatform.find(result.output)?.groups?.get("source")?.value)
     }
 }

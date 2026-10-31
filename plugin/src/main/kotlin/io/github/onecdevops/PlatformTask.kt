@@ -29,8 +29,8 @@ abstract class PlatformTask: DefaultTask() {
             PlatformInstallations.standardLocations(windowsProgramDirs.get()))
 
     companion object {
-        const val INSTALLATION_PATHS_PROPERTY = "onec.installations.paths"
-        const val INSTALLATION_VARIABLES_PROPERTY = "onec.installations.fromEnv"
+        const val INSTALLATION_PATHS_PROPERTY = "onec.platform.installations.paths"
+        const val INSTALLATION_VARIABLES_PROPERTY = "onec.platform.installations.fromEnv"
         const val DEFAULT_INSTALLATION_VARIABLE = "ONEC_HOME"
     }
 }
