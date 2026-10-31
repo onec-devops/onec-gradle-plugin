@@ -134,8 +134,8 @@ If they are installed elsewhere, the path is set in Gradle properties, for examp
 
 | Property | Default | Description | Example |
 |---|---|---|---|
-| `onec.installations.paths` | | Paths to platform installations, or to directories with installations of several versions, separated by commas. | `D:/1cv8,E:/1C/8.3.25.1633` |
-| `onec.installations.fromEnv` | `ONEC_HOME` | Names of environment variables holding such paths, separated by commas. | `ONEC_HOME,V8_HOME` |
+| `onec.platform.installations.paths` | | Paths to platform installations, or to directories with installations of several versions, separated by commas. | `D:/1cv8,E:/1C/8.3.25.1633` |
+| `onec.platform.installations.fromEnv` | `ONEC_HOME` | Names of environment variables holding such paths, separated by commas. | `ONEC_HOME,V8_HOME` |
 | `onec.edt.installations.paths` | | The same for 1C:EDT. | `D:/1C/EDT` |
 | `onec.edt.installations.fromEnv` | `EDT_HOME` | The same for 1C:EDT. | `EDT_HOME,EDT_2026` |
 

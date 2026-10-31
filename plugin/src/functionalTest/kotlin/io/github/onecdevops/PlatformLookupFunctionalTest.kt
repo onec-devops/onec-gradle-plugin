@@ -10,9 +10,9 @@ class PlatformLookupFunctionalTest: FunctionalTest() {
     @Test fun `names the directory from the Gradle property when the platform is not found`() {
         requestMissingPlatform()
 
-        val result = runner("onecBuild", "-Ponec.installations.paths=${platformDir.path}").buildAndFail()
+        val result = runner("onecBuild", "-Ponec.platform.installations.paths=${platformDir.path}").buildAndFail()
 
-        assertContains(result.output, "  ${platformDir.path}  (onec.installations.paths)")
+        assertContains(result.output, "  ${platformDir.path}  (onec.platform.installations.paths)")
     }
 
     @Test fun `names the directory from ONEC_HOME when the platform is not found`() {
@@ -28,7 +28,7 @@ class PlatformLookupFunctionalTest: FunctionalTest() {
     @Test fun `names the directory from a custom environment variable when the platform is not found`() {
         requestMissingPlatform()
 
-        val result = runner("onecBuild", "-Ponec.installations.fromEnv=PLATFORM_DIR")
+        val result = runner("onecBuild", "-Ponec.platform.installations.fromEnv=PLATFORM_DIR")
             .withEnvironment(System.getenv() + ("PLATFORM_DIR" to platformDir.path))
             .buildAndFail()
 

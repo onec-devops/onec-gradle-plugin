@@ -40,7 +40,7 @@ each time, which would change the build cache key.
 
 You need Java 17 or newer, the 1C:Enterprise platform with `ibcmd` and 1C:EDT 2026 with
 `1cedtcli`: the functional tests call them and fail without them. If the platform is not in a
-standard location, point `ONEC_HOME` or the Gradle property `onec.installations.paths` to it;
+standard location, point `ONEC_HOME` or the Gradle property `onec.platform.installations.paths` to it;
 for 1C:EDT, `EDT_HOME` or `onec.edt.installations.paths`.
 
 `./gradlew build` compiles and validates the plugin and runs the unit and the functional tests.
