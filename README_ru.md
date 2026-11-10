@@ -229,8 +229,8 @@ data-processor/build/onec/data-processor.epf
 | `onecInstallations` | Показывает найденные установки платформы и 1С:EDT. |
 
 `assemble`, а значит и `build`, зависят от `onecBuild`. Она пропускается, если исходники не
-менялись, а с включённым build cache результат берётся из кеша. Плагин работает
-с configuration cache.
+менялись, а с включённым build cache результат берётся из кеша. Плагин
+поддерживает configuration cache и Isolated Projects.
 
 ## Участие в разработке
 

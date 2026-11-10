@@ -230,8 +230,8 @@ data-processor/build/onec/data-processor.epf
 | `onecInstallations` | Displays the detected platform and 1C:EDT installations. |
 
 `assemble`, and so `build`, depend on `onecBuild`. It is skipped when the sources have not
-changed, and with the build cache enabled its result is taken from the cache. The plugin works
-with the configuration cache.
+changed, and with the build cache enabled its result is taken from the cache. The plugin
+supports the configuration cache and Isolated Projects.
 
 ## Contributing
 

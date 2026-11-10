@@ -119,4 +119,24 @@ class BuildFunctionalTest: FunctionalTest() {
 
         assertContains(result.output, "Reusing configuration cache.")
     }
+
+    @Test fun `configures the projects of a multi-project build with isolated projects`() {
+        buildFile.delete()
+        settingsFile.appendText("\ninclude('configuration', 'extension')")
+        for (project in listOf("configuration", "extension")) {
+            projectDir.resolve(project).mkdirs()
+            projectDir.resolve("$project/build.gradle").writeText("""
+                plugins {
+                    id('io.github.onec-devops.onec')
+                }
+
+                onec {
+                    platformVersion = '$PLATFORM_VERSION'
+                }
+            """.trimIndent())
+        }
+
+        // Isolated Projects checks the configuration, so the tasks need not run.
+        runner("assemble", "--dry-run", "-Dorg.gradle.unsafe.isolated-projects=true").build()
+    }
 }
