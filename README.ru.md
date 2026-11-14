@@ -1,6 +1,9 @@
 # Onec Gradle Plugin
 
-[English](README.md) | Русский
+[English](README.md) | **Русский**
+
+[![Сборка](https://github.com/onec-devops/onec-gradle-plugin/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/onec-devops/onec-gradle-plugin/actions/workflows/build.yml)
+[![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/io.github.onec-devops.onec?logo=gradle&logoColor=4DC9C0&label=Plugin%20Portal)](https://plugins.gradle.org/plugin/io.github.onec-devops.onec)
 
 Gradle-плагин для разработки на 1С:Предприятии. Собирает конфигурации, расширения, внешние
 обработки и отчёты из XML-выгрузок и проектов 1С:EDT.
