@@ -1,6 +1,9 @@
 # Onec Gradle Plugin
 
-English | [Русский](README_ru.md)
+**English** | [Русский](README.ru.md)
+
+[![Build](https://github.com/onec-devops/onec-gradle-plugin/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/onec-devops/onec-gradle-plugin/actions/workflows/build.yml)
+[![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/io.github.onec-devops.onec?logo=gradle&logoColor=4DC9C0&label=Plugin%20Portal)](https://plugins.gradle.org/plugin/io.github.onec-devops.onec)
 
 A Gradle plugin for 1C:Enterprise development. It builds configurations, extensions, external
 data processors and reports from XML dumps and 1C:EDT projects.

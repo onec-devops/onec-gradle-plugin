@@ -82,7 +82,7 @@ tests on Linux in the images of the platform and 1C:EDT of
 `testPlatformVersion` and `testEdtVersion`; the job of the oldest platform runs the test builds
 on the oldest supported Gradle. The [Release](.github/workflows/release.yml)
 workflow runs the Build workflow and publishes the plugin only if it passes. It publishes the
-`version` of `gradle.properties`; the examples in `README.md` and `README_ru.md` name the version
+`version` of `gradle.properties`; the examples in `README.md` and `README.ru.md` name the version
 too, so the first change after a release raises it in all three.
 
 The images are the private packages `1cv8-server` of the repository owner in the GitHub Container
