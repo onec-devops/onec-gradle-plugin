@@ -55,7 +55,8 @@ class EdtLookupFunctionalTest: FunctionalTest() {
     @Test fun `asks for the 1C EDT version when it is not set`() {
         val result = runner("onecBuild").buildAndFail()
 
-        assertContains(result.output, "onec.edtVersion is not set")
+        assertContains(result.output, "'onec.edtVersion' is not set.")
+        assertContains(result.output, "Set the 1C:EDT version in the onec block, for example: onec { edtVersion = \"2026.2\" }")
     }
 
     private fun requestMissingEdt() {

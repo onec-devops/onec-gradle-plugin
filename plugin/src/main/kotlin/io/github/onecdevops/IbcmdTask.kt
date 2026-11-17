@@ -1,6 +1,7 @@
 package io.github.onecdevops
 
 import org.gradle.api.GradleException
+import org.gradle.api.InvalidUserDataException
 import org.gradle.api.file.FileSystemOperations
 import org.gradle.api.tasks.Input
 import org.gradle.process.ExecOperations
@@ -50,7 +51,8 @@ abstract class IbcmdTask: PlatformTask() {
     }
 
     private fun findIbcmd(): File {
-        val requested = platformVersion.orNull ?: throw GradleException("onec.platformVersion is not set")
+        val requested = platformVersion.orNull ?: throw InvalidUserDataException("'onec.platformVersion' is not set.\n" +
+            "Set the platform version in the onec block, for example: onec { platformVersion = \"8.3.25\" }")
         val locations = installationLocations()
         val installation = PlatformInstallations.select(requested, PlatformInstallations.discover(locations))
             ?: throw installationNotFound("1C:Enterprise platform $requested with ibcmd", locations,
