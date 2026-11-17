@@ -1,0 +1,44 @@
+---
+description: "How to move to a new version of the Gradle plugin for 1C:Enterprise."
+---
+
+# Upgrading the Plugin
+
+When you upgrade to a plugin version with breaking changes or deprecated DSL elements, you may need
+to change your build. This page lists those changes by version.
+
+For the full list of changes in each version, including new features and fixes, see the
+[plugin releases on GitHub](https://github.com/onec-devops/onec-gradle-plugin/releases).
+
+## Upgrade Steps {/* #steps */}
+
+1. Read the sections below for every version between your current version and the new one.
+2. Update the plugin version in the `plugins` block.
+3. Apply the changes described in those sections, then build the project.
+
+## Upgrading to 0.3.0 {/* #upgrade-to-0-3-0 */}
+
+### Platform Lookup Properties Renamed {/* #platform-properties-renamed */}
+
+The Gradle properties that the plugin uses to find the platform have been renamed, and the old
+names are no longer read. If your build sets the old properties, it can't find a platform installed
+outside the standard locations.
+
+| Old name | New name |
+|---|---|
+| `onec.installations.paths` | `onec.platform.installations.paths` |
+| `onec.installations.fromEnv` | `onec.platform.installations.fromEnv` |
+
+To fix this, rename the properties wherever they are set, for example in
+`~/.gradle/gradle.properties`.
+
+### Minimum Gradle Version Is 9.1 {/* #minimum-gradle-9-1 */}
+
+The plugin requires Gradle 9.1.0 or later. On Gradle 9.0.x, the build fails with
+`The onec plugin requires Gradle 9.1.0 or newer`.
+
+To fix this, upgrade the project to a newer Gradle version with the Gradle Wrapper:
+
+```bash
+./gradlew wrapper --gradle-version <version>
+```

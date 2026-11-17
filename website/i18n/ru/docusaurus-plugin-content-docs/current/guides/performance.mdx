@@ -1,0 +1,28 @@
+---
+description: "Как ускорить сборку проектов 1С возможностями Gradle."
+---
+
+# Ускорение сборки
+
+Скорость сборки напрямую влияет на продуктивность. Сборка проекта 1С занимает время, а при разработке и
+в [CI](./building-in-ci.mdx) она нужна постоянно. Сократить это время можно встроенными
+средствами Gradle для ускорения сборки. Они включаются свойствами в `gradle.properties` проекта.
+
+```properties title="gradle.properties"
+org.gradle.parallel=true
+org.gradle.caching=true
+org.gradle.configuration-cache=true
+```
+
+## Свойства Gradle {/* #gradle-properties */}
+
+| Свойство | По умолчанию | Описание |
+|---|---|---|
+| `org.gradle.parallel` | `false` | Если включено, Gradle собирает проекты [многопроектной сборки](./multi-project-builds.mdx) параллельно. |
+| `org.gradle.caching` | `false` | Если включено, Gradle берёт из [кэша сборки](https://docs.gradle.org/current/userguide/build_cache.html) артефакт, уже собранный из того же исходного кода той же платформой. |
+| `org.gradle.configuration-cache` | `false` | Если включено, Gradle берёт настройку сборки из [кэша конфигурации](https://docs.gradle.org/current/userguide/configuration_cache.html) и не выполняет её заново, даже если исходный код изменился. |
+| `org.gradle.unsafe.isolated-projects` | `false` | Если включено, Gradle настраивает проекты многопроектной сборки параллельно, как [изолированные проекты](https://docs.gradle.org/current/userguide/isolated_projects.html). Возможность в разработке. |
+
+Свойства включаются независимо друг от друга, кроме `org.gradle.unsafe.isolated-projects`: оно
+включает и кэш конфигурации. Подробнее об этих свойствах и других способах ускорить сборку
+рассказано в [документации Gradle](https://docs.gradle.org/current/userguide/performance.html).

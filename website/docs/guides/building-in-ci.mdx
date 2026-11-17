@@ -1,0 +1,113 @@
+---
+description: "How to build 1C:Enterprise projects in CI with Gradle."
+---
+
+# Building in CI
+
+To build a project in CI, the runner must meet the
+[requirements](../getting-started/first-build.mdx#requirements). You can install the required
+software on the runner or use a Docker image that already has it.
+
+:::tip
+
+The easiest way to build a CI image is with our
+[onec-docker](https://github.com/onec-devops/onec-docker) project. Its images include the
+required versions of the 1C:Enterprise platform, 1C:EDT, and Java. The plugin itself is tested on
+these images.
+
+:::
+
+The plugin finds the platform and 1C:EDT in the image's standard locations, so the job needs no
+extra installation or configuration. The build doesn't need a platform license, so any runner that
+supports containers will do. To learn how to run jobs in containers, see the
+[GitHub Actions](https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/run-jobs-in-a-container)
+and [GitLab CI](https://docs.gitlab.com/ci/docker/using_docker_images/) documentation.
+
+The platform license doesn't allow you to publish the image publicly. Store it in a private
+registry, such as your GitHub organization's packages or a GitLab project's container registry, and
+give the job read access.
+
+`./gradlew build` builds the files and also runs the checks of the Gradle `check` task, such as a
+code check if you added one to the build. To build the files without running checks, use
+`./gradlew assemble`.
+
+The examples below show a minimal setup. To learn how to run Gradle in any CI, including with the
+build cache and the configuration cache, see the
+[Gradle documentation](https://docs.gradle.org/current/userguide/gradle_on_ci.html).
+
+## GitHub Actions {/* #github-actions */}
+
+The image comes from the repository owner's GitHub Container Registry. Because the image is
+private, the repository needs read access to it: in the package settings, select
+**Manage Actions access**. The artifacts are uploaded to the workflow run, and you can download
+them from its page.
+
+```yaml title=".github/workflows/ci.yml"
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/1cv8-server:8.3.25.1633
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+      # The platform fails under the runner user, which the image doesn't have.
+      options: --user root
+    steps:
+      - uses: actions/checkout@v7
+      - uses: gradle/actions/setup-gradle@v6
+      - run: ./gradlew build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: onec
+          path: |
+            **/build/onec/*.cf
+            **/build/onec/*.cfe
+            **/build/onec/*.epf
+            **/build/onec/*.erf
+```
+
+To learn how to validate the Gradle Wrapper, show a build report in the job summary, or build on
+several versions at once, see the
+[Gradle documentation for GitHub Actions](https://docs.gradle.org/current/userguide/github-actions.html).
+
+## GitLab CI {/* #gitlab-ci */}
+
+The image comes from the project's container registry, and GitLab pulls it without extra
+configuration. The artifacts are saved with the job, and you can download them from its page. The
+Gradle user home is moved into the project directory so GitLab can cache it between runs.
+
+```yaml title=".gitlab-ci.yml"
+build:
+  image: $CI_REGISTRY_IMAGE/1cv8-server:8.3.25.1633
+  variables:
+    GRADLE_USER_HOME: $CI_PROJECT_DIR/.gradle
+  script:
+    - ./gradlew build
+  artifacts:
+    paths:
+      - "**/build/onec/*.cf"
+      - "**/build/onec/*.cfe"
+      - "**/build/onec/*.epf"
+      - "**/build/onec/*.erf"
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - .gradle/caches
+      - .gradle/wrapper
+      - .gradle/notifications
+```
+
+To learn how to set up caching for shared runners and between stages, split jobs for merge
+requests and branches, or publish releases, see the
+[Gradle documentation for GitLab CI](https://docs.gradle.org/current/userguide/gitlab-ci.html).

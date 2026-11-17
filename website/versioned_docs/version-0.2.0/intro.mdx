@@ -1,0 +1,91 @@
+---
+description: "A Gradle plugin that automates the development of 1C:Enterprise projects."
+slug: /
+---
+
+# Introduction
+
+A Gradle plugin that automates the development of 1C:Enterprise projects.
+
+:::warning
+
+The plugin is in early development and has no stable version yet. A new version may contain
+breaking changes or deprecated DSL elements. To learn what to change in your build when you
+upgrade to such a version, see [Upgrading the Plugin](./upgrading.mdx).
+
+:::
+
+## Features {/* #features */}
+
+- [Any project format and type](#formats). The plugin builds configurations, extensions, external
+  data processors, and reports from an XML dump or a 1C:EDT project, and detects which one it is.
+- [Multi-project builds](#multi-project). A configuration, its extensions, data processors, and
+  reports can live in one repository and build as one solution.
+- [Customization and extensibility](#extensible). You can change the plugin settings and add your
+  own tasks, such as a code check with BSL Language Server.
+- [Part of the Gradle ecosystem](#gradle). A 1C:Enterprise project works with Gradle community
+  plugins and with any IDE or CI system that supports Gradle.
+
+### Any Project Format and Type {/* #formats */}
+
+The plugin works with any 1C:Enterprise project whose source code is stored in a repository:
+configurations, extensions, external data processors, and reports, either as a platform XML dump or
+in the [1C:EDT format](./getting-started/preparing-sources.mdx#sources-directory). The project type
+and format are up to you.
+
+Without the plugin, each combination usually needs its own sequence of commands: configurations,
+extensions, and external data processors are loaded and saved differently, and a 1C:EDT project
+must first be exported to XML. When a project moves from Designer to 1C:EDT, the build has to be
+rewritten.
+
+The plugin detects the format and type of the project from its source code and
+[builds](./reference/tasks.mdx#onecbuild) any of them with the same command. When a project moves
+from XML to 1C:EDT, only one build setting changes: the 1C:EDT version.
+
+### Multi-Project Builds {/* #multi-project */}
+
+The plugin supports Gradle [multi-project builds](./guides/multi-project-builds.mdx): related
+projects live in one repository and build together. For example, a head office configuration and a
+store checkout configuration that exchanges data with it.
+
+Without the plugin, each file is built by a separate call in a script. The call order and shared
+settings, such as the platform version, are repeated for every project, and each new project adds
+another call.
+
+With the plugin, you can build all projects at once or just one of them. Adding a project takes a
+subdirectory and one line in the settings script. Projects can build in parallel without
+interfering with each other, and shared settings are defined once in a
+[convention plugin](https://docs.gradle.org/current/userguide/implementing_gradle_plugins_convention.html).
+
+### Customization and Extensibility {/* #extensible */}
+
+You can [configure](./reference/extension.mdx) the plugin for your project and add your own tasks,
+whether build steps or standalone actions. For example, you can check the code with
+[BSL Language Server](https://1c-syntax.github.io/bsl-language-server/) before the build or publish
+the artifacts to Nexus.
+
+Without the plugin, such tasks live in separate scripts next to the build. Each one is run on its
+own, and shared rules are copied from one repository to another.
+
+With the plugin, you can write custom tasks in Kotlin or Groovy directly in the build script, and
+move shared settings and tasks to a
+[convention plugin](https://docs.gradle.org/current/userguide/implementing_gradle_plugins_convention.html)
+that any project applies with a single line.
+
+### Part of the Gradle Ecosystem {/* #gradle */}
+
+The plugin makes a 1C:Enterprise project part of the Gradle ecosystem. Tools built for Gradle
+projects in Java or Kotlin work for 1C:Enterprise projects too:
+[Gradle support in IDEs](https://docs.gradle.org/current/userguide/gradle_ides.html),
+[CI integrations](https://docs.gradle.org/current/userguide/gradle_on_ci.html), and
+[community plugins](https://docs.gradle.org/current/userguide/plugins.html).
+
+Your Gradle experience applies too. Developers who know Gradle from other projects don't need to
+learn a separate build tool for 1C:Enterprise, and answers to build questions can be found in the
+Gradle documentation and community.
+
+## Related Topics {/* #related-topics */}
+
+- [Prepare the source code](./getting-started/preparing-sources.mdx) for the build.
+- [Build your first project](./getting-started/first-build.mdx) step by step.
+- [Configure the plugin](./reference/extension.mdx) for your project.

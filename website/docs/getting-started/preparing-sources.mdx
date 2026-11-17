@@ -1,0 +1,123 @@
+---
+description: "How to prepare 1C:Enterprise source code for a Gradle build."
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Preparing the Source Code
+
+The plugin builds from an XML dump made in Designer or from a 1C:EDT project. If your source code
+is ready, skip to [Building a Project](./first-build.mdx).
+
+## Contents of the Source Directory {/* #sources-directory */}
+
+The plugin detects the project type from the contents of the source directory, which is set by the
+`srcDir` property. Put the dump directly in this directory, not in a subdirectory.
+
+<Tabs groupId="source-format">
+<TabItem value="xml" label="XML">
+
+Configuration or extension:
+
+```text
+src/
+├─ Configuration.xml
+├─ Catalogs/
+├─ Documents/
+└─ ...
+```
+
+External data processor:
+
+```text
+src/
+├─ DataProcessor.xml
+└─ DataProcessor/
+```
+
+External report:
+
+```text
+src/
+├─ Report.xml
+└─ Report/
+```
+
+To stay compatible with existing dumps, the files can have any name, such as `Invoice.xml` and
+`Invoice/`. However, we recommend naming them `DataProcessor` and `Report`, as in the examples. This
+way, the file names don't depend on the object name and don't change when the object is renamed.
+
+</TabItem>
+<TabItem value="edt" label="1C:EDT">
+
+The source directory is the 1C:EDT project directory itself, of any project type, with a `.project`
+file and a `DT-INF/` directory:
+
+```text
+src/
+├─ .project
+├─ DT-INF/
+│  └─ PROJECT.PMF
+└─ src/
+```
+
+A project of external data processors and reports builds into a single artifact, so it must contain
+exactly one data processor or report.
+
+</TabItem>
+</Tabs>
+
+## Exporting and Placing the Source Code {/* #exporting-sources */}
+
+<Tabs groupId="source-format">
+<TabItem value="xml" label="XML">
+
+You dump the source code from Designer. Each project type uses its own command.
+
+To dump a configuration:
+
+1. Select **Configuration** > **Dump configuration to files**.
+2. Select the source directory.
+
+To dump an extension:
+
+1. Open the extension with **Configuration** > **Configuration extensions**.
+2. Select **Configuration** > **Dump configuration to files**.
+3. Select the source directory.
+
+To dump an external data processor or report:
+
+1. Open the file with **File** > **Open**.
+2. Select **Actions** > **Export to files**.
+3. Save `DataProcessor.xml` or `Report.xml` to the source directory.
+
+To dump from the command line, use the `ibcmd` utility. For details, see the
+[administrator guide](https://its.1c.ru/db/v8314doc#bookmark:adm:TI000000894).
+
+</TabItem>
+<TabItem value="edt" label="1C:EDT">
+
+You can create a new 1C:EDT project in the source directory or move an existing one there.
+
+To create a new project:
+
+1. Create a project in 1C:EDT.
+2. Set the source directory as the project location.
+
+To move an existing project:
+
+- Copy the project directory to the source directory.
+
+:::tip
+
+To keep working on the project, import it from the source directory into your workspace with
+**File** > **Import** > **Existing Projects into Workspace**.
+
+:::
+
+To build the project, set the 1C:EDT version in `edtVersion`. For details, see
+[Adding the Plugin to the Build Script](./first-build.mdx#applying-the-plugin).
+
+</TabItem>
+</Tabs>

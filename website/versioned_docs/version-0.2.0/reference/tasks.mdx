@@ -1,0 +1,62 @@
+---
+description: "The tasks of the Gradle plugin for 1C:Enterprise and their behavior."
+---
+
+# Tasks
+
+The plugin adds the following tasks to the project.
+
+## `onecBuild` {/* #onecbuild */}
+
+**Type:** `io.github.onecdevops.OnecBuildTask`\
+**Depends on:** `onecCreateInfobase`
+
+Builds the project file in the `build/onec` directory.
+
+- Inputs: the files in `srcDir` and the full version of the platform in use, plus the 1C:EDT
+  version for a 1C:EDT project. If you install another platform build that matches
+  `platformVersion`, the file is rebuilt.
+- Output: a `.cf`, `.cfe`, `.epf`, or `.erf` file, depending on the source code.
+- Skipped as `NO-SOURCE` if `srcDir` is empty or doesn't exist.
+- Cacheable in the build cache.
+- Builds in a copy of the infobase created by `onecCreateInfobase`, so that infobase stays empty.
+
+## `onecCreateInfobase` {/* #oneccreateinfobase */}
+
+**Type:** `io.github.onecdevops.OnecCreateInfobaseTask`
+
+Creates the empty `build/onec/infobase` infobase that `onecBuild` builds in.
+
+Runs once and then stays `UP-TO-DATE` until you run `clean` or switch to another platform build. The
+task has no group, so `./gradlew tasks` shows it only with `--all`.
+
+## `onecInstallations` {/* #onecinstallations */}
+
+**Type:** `io.github.onecdevops.OnecInstallationsTask`
+
+Lists the platform and 1C:EDT installations the plugin has found and marks the ones the build will
+use. Runs every time, because the installations on a machine can change:
+
+```text
+1C:Enterprise platform, requested: 8.3.25
+
+* 8.3.25.1633   C:\Program Files\1cv8\8.3.25.1633   standard location
+  8.3.27.2342   C:\Program Files\1cv8\8.3.27.2342   standard location
+
+1C:EDT, requested: 2026.2
+
+* 2026.2.2   C:\Users\me\AppData\Local\1C\1cedtstart\installations\1C_EDT 2026.2\1cedt   standard location
+```
+
+## Lifecycle Tasks {/* #lifecycle-tasks */}
+
+The plugin applies the Gradle `base` plugin and attaches its own tasks to the `base` lifecycle
+tasks.
+
+- `assemble`\
+  **Depends on:** `onecBuild`\
+  Builds the project file. Added by the `base` plugin.
+
+- `build`\
+  **Depends on:** `assemble`, `check`\
+  Builds and checks the project. Added by the `base` plugin.

@@ -1,0 +1,10 @@
+{
+  "title": {
+    "message": "Onec Gradle Plugin",
+    "description": "The title in the navbar"
+  },
+  "item.label.Docs": {
+    "message": "Документация",
+    "description": "Navbar item with label Docs"
+  }
+}

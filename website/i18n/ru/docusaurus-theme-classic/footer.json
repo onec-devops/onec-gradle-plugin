@@ -1,0 +1,18 @@
+{
+  "link.item.label.GitHub": {
+    "message": "GitHub",
+    "description": "The label of footer link with label=GitHub linking to https://github.com/onec-devops/onec-gradle-plugin"
+  },
+  "link.item.label.Contributing": {
+    "message": "Участие в разработке",
+    "description": "The label of footer link with label=Contributing linking to https://github.com/onec-devops/onec-gradle-plugin/blob/main/CONTRIBUTING.md"
+  },
+  "link.item.label.Gradle Plugin Portal": {
+    "message": "Gradle Plugin Portal",
+    "description": "The label of footer link with label=Gradle Plugin Portal linking to https://plugins.gradle.org/plugin/io.github.onec-devops.onec"
+  },
+  "copyright": {
+    "message": "Распространяется по лицензии Apache License 2.0.",
+    "description": "The footer copyright"
+  }
+}

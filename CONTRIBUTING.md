@@ -72,6 +72,21 @@ same way, in full or by their leading part:
 ./gradlew functionalTest -PtestPlatformVersion=8.3.25.1633 -PtestEdtVersion=2026.2.2
 ```
 
+## Documentation
+
+The documentation site is built with [Docusaurus](https://docusaurus.io/) from `website`. The
+English pages are `.mdx` files in `website/docs`, the Russian ones under `website/i18n/ru` with
+the same file names. A change to a page goes to both languages, and a heading that pages link to has the same
+ID in both, for example `## 1C:EDT projects {/* #edt-projects */}`. A build script example is
+given in Kotlin and in Groovy, in tabs, as on the existing pages.
+
+The site shows the documentation of the latest release, and that of `main` as Next. A release has
+its own copy of the pages; a fix that also holds for a release goes to its copy too.
+
+The site needs Node.js 20 or newer. In `website`, `npm ci` installs the dependencies,
+`npm start` serves the English site and `npm start -- --locale ru` the Russian one, and
+`npm run build` builds both and fails on a broken link.
+
 ## CI
 
 The [Build](.github/workflows/build.yml) workflow runs on pushes to `main` and on pull requests.
@@ -80,10 +95,20 @@ tests on Linux in the images of the platform and 1C:EDT of
 [onec-docker](https://github.com/onec-devops/onec-docker), one job for each pair of
 `matrix.onec-version` and `matrix.edt-version`, which the job passes to the tests as
 `testPlatformVersion` and `testEdtVersion`; the job of the oldest platform runs the test builds
-on the oldest supported Gradle. The [Release](.github/workflows/release.yml)
-workflow runs the Build workflow and publishes the plugin only if it passes. It publishes the
-`version` of `gradle.properties`; the examples in `README.md` and `README.ru.md` name the version
-too, so the first change after a release raises it in all three.
+on the oldest supported Gradle. The [Release](.github/workflows/release.yml) workflow runs the
+Build workflow and publishes the plugin only if it passes. It publishes the `version` of
+`gradle.properties`; the examples in `README.md`, `README.ru.md` and the getting started and
+multi-project builds pages of the site in both languages name the version too. So the first
+change after a release copies the documentation of the release, with
+`npm run docusaurus docs:version <version>` in `website`, and raises the version in all of
+them; the site shows the new release from then on. The command copies the Russian label of Next
+too: in `website/i18n/ru/docusaurus-plugin-content-docs/version-<version>.json`, set
+`version.label` to the version.
+
+The [Website](.github/workflows/website.yml) workflow builds the site on pull requests and on
+pushes to `main`, and publishes the site of `main` to GitHub Pages, which takes it from GitHub
+Actions ("Source" under "Pages" in the repository settings). It can also be run by hand from the
+Actions tab to publish `main` again.
 
 The images are the private packages `1cv8-server` of the repository owner in the GitHub Container
 registry, for example `ghcr.io/onec-devops/1cv8-server:8.3.25.1633-edt-2026.2.2`. The repository gets read

@@ -35,7 +35,7 @@ kotlin {
 }
 
 gradlePlugin {
-    website = "https://github.com/onec-devops/onec-gradle-plugin"
+    website = "https://onec-devops.github.io/onec-gradle-plugin/"
     vcsUrl = "https://github.com/onec-devops/onec-gradle-plugin"
     plugins.create("onec") {
         id = "io.github.onec-devops.onec"

@@ -1,0 +1,28 @@
+---
+description: "How to speed up the build of 1C:Enterprise projects with Gradle features."
+---
+
+# Improving Performance
+
+Building a 1C:Enterprise project takes time, and builds run constantly during development and in
+[CI](./building-in-ci.mdx), so their speed matters. Gradle has built-in features that make builds
+faster. You enable them with properties in the project's `gradle.properties` file.
+
+```properties title="gradle.properties"
+org.gradle.parallel=true
+org.gradle.caching=true
+org.gradle.configuration-cache=true
+```
+
+## Gradle Properties {/* #gradle-properties */}
+
+| Property | Default | Description |
+|---|---|---|
+| `org.gradle.parallel` | `false` | When enabled, Gradle builds the projects of a [multi-project build](./multi-project-builds.mdx) in parallel. |
+| `org.gradle.caching` | `false` | When enabled, Gradle reuses an artifact from the [build cache](https://docs.gradle.org/current/userguide/build_cache.html) if it was already built from the same source code with the same platform. |
+| `org.gradle.configuration-cache` | `false` | When enabled, Gradle reuses the build configuration from the [configuration cache](https://docs.gradle.org/current/userguide/configuration_cache.html) instead of running it again, even if the source code has changed. |
+| `org.gradle.unsafe.isolated-projects` | `false` | When enabled, Gradle configures the projects of a multi-project build in parallel as [isolated projects](https://docs.gradle.org/current/userguide/isolated_projects.html). Incubating. |
+
+Each property can be enabled on its own, except `org.gradle.unsafe.isolated-projects`, which also
+enables the configuration cache. For more on these properties and other ways to speed up the build,
+see the [Gradle documentation](https://docs.gradle.org/current/userguide/performance.html).

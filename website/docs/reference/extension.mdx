@@ -1,0 +1,62 @@
+---
+description: "Properties of the onec block that configures the Gradle plugin for 1C:Enterprise."
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# The `onec` Block
+
+The `onec` block is the Gradle extension that configures the plugin.
+
+## `edtVersion` {/* #edtversion */}
+
+**Type:** `Property<String>`\
+**Default:** none
+
+The 1C:EDT version used to build the project: a full version, such as `2026.2.2`, or a prefix, such
+as `2026.2`. The plugin uses the newest matching installation. Required only for 1C:EDT projects,
+not for XML dumps.
+
+The plugin looks for 1C:EDT in the following order and, if several installations have the same
+version, uses the first one it finds:
+
+1. The paths in the `onec.edt.installations.paths` Gradle property.
+2. The paths in the environment variables listed in `onec.edt.installations.fromEnv`, which
+   defaults to `EDT_HOME`.
+3. The standard locations: on Windows, `%LOCALAPPDATA%\1C\1cedtstart\installations` (1C:EDT Start)
+   and `%ProgramFiles%\1C\1CE\components` (the 1C:Enterprise installer); on Linux,
+   `/opt/1C/1CE/components`.
+
+## `platformVersion` {/* #platformversion */}
+
+**Type:** `Property<String>`\
+**Default:** none
+
+The platform version used to build the project: a full version, such as `8.3.25.1633`, or a prefix,
+such as `8.3.25`. The plugin uses the newest matching installation. Required.
+
+The plugin looks for the platform in the following order and, if several installations have the
+same version, uses the first one it finds:
+
+1. The paths in the `onec.platform.installations.paths` Gradle property.
+2. The paths in the environment variables listed in `onec.platform.installations.fromEnv`, which
+   defaults to `ONEC_HOME`.
+3. The standard locations: on Windows, `%ProgramFiles%\1cv8` and `%ProgramFiles(x86)%\1cv8`; on
+   Linux, `/opt/1cv8/<architecture>`.
+
+A platform installation directory is named after its version. A link to it, such as
+`/opt/1cv8/current`, also works. To see which installations the plugin has found, run the
+`onecInstallations` task.
+
+## `srcDir` {/* #srcdir */}
+
+**Type:** `DirectoryProperty`\
+**Default:** `src`
+
+The source directory: an XML dump or a 1C:EDT project of a configuration, extension, external data
+processor, or external report. The plugin detects the format and type of the source code from its
+files.
+
+To learn how to prepare the source code, see
+[Preparing the Source Code](../getting-started/preparing-sources.mdx).

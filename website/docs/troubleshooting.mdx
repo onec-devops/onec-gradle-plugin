@@ -1,0 +1,191 @@
+---
+description: "Common problems with the Gradle plugin for 1C:Enterprise and how to fix them."
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Troubleshooting
+
+This page covers common problems with the plugin and how to fix them.
+
+## Error: `1C:Enterprise platform … with ibcmd not found` {/* #platform-not-found */}
+
+```text
+1C:Enterprise platform 8.3.25 with ibcmd not found, looked in:
+  C:\Program Files\1cv8  (standard location)
+  C:\Program Files (x86)\1cv8  (standard location)
+List the installations in the Gradle property onec.platform.installations.paths, or name the environment variables that point to them in onec.platform.installations.fromEnv (ONEC_HOME by default).
+```
+
+The plugin can't find a platform installation that matches `platformVersion`.
+
+To fix this issue:
+
+1. Run the `onecInstallations` task to see which installations the plugin has found.
+2. If the required version is missing, install it. If the platform is installed outside the
+   standard locations, add its path to the `onec.platform.installations.paths` Gradle property. For
+   details, see [Gradle Properties](./reference/gradle-properties.mdx).
+
+## Error: `1C:EDT … with 1cedtcli not found` {/* #edt-not-found */}
+
+The plugin can't find a 1C:EDT installation that matches `edtVersion`.
+
+To fix this issue:
+
+1. Run the `onecInstallations` task to see which installations the plugin has found.
+2. If the required version is missing, install it. If 1C:EDT is installed outside the standard
+   locations, add its path to the `onec.edt.installations.paths` Gradle property. For details, see
+   [Gradle Properties](./reference/gradle-properties.mdx).
+
+## Error: `'onec.platformVersion' is not set` {/* #version-not-set */}
+
+`platformVersion` isn't set in the `onec` block, and every build requires it. The
+`'onec.edtVersion' is not set` error means the same for `edtVersion`, which 1C:EDT projects
+require.
+
+To fix this issue, set the version in the `onec` block:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="build.gradle.kts"
+onec {
+    platformVersion = "8.3.25"
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="build.gradle"
+onec {
+    platformVersion = '8.3.25'
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Error: `ibcmd infobase config import failed` {/* #ibcmd-failed */}
+
+```text
+ibcmd infobase config import failed with exit code ...:
+...
+```
+
+The platform couldn't load the source code. The `ibcmd` output after the first line explains the
+cause.
+
+Common causes:
+
+- The dump is incomplete.
+- The dump was made by a newer platform than the one used for the build. The platform can't load a
+  dump in a newer format than its own.
+- An extension or data processor refers to configuration objects. For details, see
+  [Extensions and data processors that refer to the configuration don't build](#configuration-references).
+
+## Extensions and Data Processors That Refer to the Configuration Don't Build {/* #configuration-references */}
+
+```text
+ibcmd infobase config import failed with exit code -1:
+  [INFO] Importing configuration from XML...
+  [ERROR] Cannot perform the operation: critical errors occurred while importing the configuration from XML files
+  [ERROR] An error occurred while importing the configuration from XML
+  [ERROR] Unknown type name - CatalogRef.Products
+```
+
+The build loads the source code into an empty infobase. If an extension or data processor refers to
+configuration objects that it doesn't contain, such as an attribute of the `CatalogRef.Products`
+type, the platform can't resolve the reference, and the load fails.
+
+The plugin currently builds extensions and data processors only in an empty infobase, so these
+extensions and data processors can't be built.
+
+## Error: `Отсутствует контейнер метаданных` {/* #missing-metadata-container */}
+
+The XML dump of a data processor or report has no `<ObjectName>` directory next to the
+`<ObjectName>.xml` description file, for example no `DataProcessor/` next to `DataProcessor.xml`.
+
+To fix this issue, create the directory and add at least an object module to it, even an empty one:
+`<ObjectName>/Ext/ObjectModule.bsl`.
+
+## An Empty Configuration Builds Instead of a Data Processor or Report {/* #empty-configuration */}
+
+In the XML dump of a data processor or report, the `<ObjectName>` directory next to the
+`<ObjectName>.xml` description file is empty. The build succeeds, but the artifact is an empty
+configuration, even though the file has an `.epf` or `.erf` extension. If you dump it back to XML,
+you get `Configuration.xml`.
+
+To fix this issue, add at least an object module to the directory, even an empty one:
+`<ObjectName>/Ext/ObjectModule.bsl`.
+
+## The Build Hangs on Exporting a 1C:EDT Project {/* #edt-hangs */}
+
+1C:EDT doesn't support the project's platform version (`Runtime-Version` in `DT-INF/PROJECT.PMF`)
+or can't open the project at all. In this case, the export hangs for a long time and then fails.
+
+To check which platform versions 1C:EDT supports, run:
+
+```bash
+1cedtcli -command platform-versions
+```
+
+If the project's version isn't listed, use a 1C:EDT version that supports it.
+
+## 1cedtcli from 1C:EDT Start Doesn't Start {/* #edt-start-java */}
+
+`1cedtcli` from a 1C:EDT Start installation runs on the `java` it finds in `PATH`, and that Java
+version must be compatible with your 1C:EDT version.
+
+To fix this issue, add the `bin` directory of a Java version listed in the 1C:EDT system
+requirements to `PATH`.
+
+## Error: `1cedtcli export exported nothing` {/* #edt-exported-nothing */}
+
+The 1C:EDT project export failed. The `1cedtcli` output explains the cause: the plugin includes it
+in the error message right after the `1cedtcli export exported nothing` line.
+
+## Error: `The 1C:EDT project … must hold one external data processor or report to build` {/* #edt-several-objects */}
+
+A project of external data processors and reports builds into a single artifact, so it must
+contain exactly one data processor or report.
+
+To fix this issue, move each data processor or report to a separate project.
+
+## Error: `Cannot create a directory for the named pipes` {/* #named-pipes */}
+
+On Linux, several `ibcmd` processes started at the same time in a fresh container can fail with
+this error, for example in a multi-project build with `--parallel`.
+
+To fix this issue, run the build again. The first run creates the required directory, so the
+second one succeeds.
+
+## Error: `The onec plugin requires Gradle 9.1.0 or newer` {/* #gradle-version */}
+
+The build runs on a Gradle version older than the plugin requires.
+
+To fix this issue, upgrade the project to a newer Gradle version with the Gradle Wrapper:
+
+<Tabs groupId="terminal">
+<TabItem value="bash" label="Bash">
+
+```bash
+./gradlew wrapper --gradle-version <version>
+```
+
+</TabItem>
+<TabItem value="powershell" label="PowerShell">
+
+```powershell
+.\gradlew wrapper --gradle-version <version>
+```
+
+</TabItem>
+</Tabs>
+
+## Still Having Issues {/* #still-having-issues */}
+
+If your problem isn't listed here or the fix didn't help,
+[open an issue on GitHub](https://github.com/onec-devops/onec-gradle-plugin/issues/new) and attach
+the build output with `--stacktrace`.

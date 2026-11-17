@@ -7,7 +7,7 @@ import org.gradle.api.tasks.Internal
 
 /** A task that needs to find the installed 1C:EDT. */
 interface UsesEdt: Task {
-    /** Full 1C:EDT version or its leading part, e.g. `2026.1`. */
+    /** Full 1C:EDT version or its leading part, e.g. `2026.2`. */
     @get:Internal
     val edtVersion: Property<String>
 
