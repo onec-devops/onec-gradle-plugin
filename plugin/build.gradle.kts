@@ -66,9 +66,9 @@ val functionalTest = tasks.register<Test>("functionalTest") {
     testClassesDirs = functionalTestSourceSet.output.classesDirs
     classpath = functionalTestSourceSet.runtimeClasspath
     useJUnitPlatform()
-    // -PtestGradleVersion=9.0.0 runs the test builds on that Gradle instead of the current one.
+    // -PtestGradleVersion=9.1.0 runs the test builds on that Gradle instead of the current one.
     providers.gradleProperty("testGradleVersion").orNull?.let { systemProperty("testGradleVersion", it) }
-    // -PtestPlatformVersion=8.3.25.1633 and -PtestEdtVersion=2026.1.3 make the tests ask for that platform
+    // -PtestPlatformVersion=8.3.25.1633 and -PtestEdtVersion=2026.2.2 make the tests ask for that platform
     // and 1C:EDT instead of any build of 8.3 and of 2026.
     providers.gradleProperty("testPlatformVersion").orNull?.let { systemProperty("testPlatformVersion", it) }
     providers.gradleProperty("testEdtVersion").orNull?.let { systemProperty("testEdtVersion", it) }

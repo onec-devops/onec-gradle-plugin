@@ -62,14 +62,14 @@ The functional tests run their builds on the same Gradle version as the build it
 on another one, pass it as a property:
 
 ```
-./gradlew functionalTest -PtestGradleVersion=9.0.0
+./gradlew functionalTest -PtestGradleVersion=9.1.0
 ```
 
 The tests ask for any platform 8.3 and any 1C:EDT 2026. To test other versions, pass them the
 same way, in full or by their leading part:
 
 ```
-./gradlew functionalTest -PtestPlatformVersion=8.3.25.1633 -PtestEdtVersion=2026.1.3
+./gradlew functionalTest -PtestPlatformVersion=8.3.25.1633 -PtestEdtVersion=2026.2.2
 ```
 
 ## CI
@@ -86,7 +86,7 @@ workflow runs the Build workflow and publishes the plugin only if it passes. It 
 too, so the first change after a release raises it in all three.
 
 The images are the private packages `1cv8-server` of the repository owner in the GitHub Container
-registry, for example `ghcr.io/onec-devops/1cv8-server:8.3.25.1633-edt-2026.1.3`. The repository gets read
+registry, for example `ghcr.io/onec-devops/1cv8-server:8.3.25.1633-edt-2026.2.2`. The repository gets read
 access to them under "Manage Actions access" in the package settings. In a fork the workflow
 takes the images of the fork owner, built by a fork of onec-docker.
 
