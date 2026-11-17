@@ -1,0 +1,47 @@
+---
+description: "Свойства Gradle, которыми настраивается Gradle-плагин для 1С."
+---
+
+# Свойства Gradle
+
+Плагин поддерживает следующие свойства Gradle.
+
+## `onec.edt.installations.fromEnv` {/* #onec-edt-installations-fromenv */}
+
+**По умолчанию:** `EDT_HOME`
+
+Переменные окружения, в каждой из которых один путь к установке 1С:EDT.
+
+```properties
+onec.edt.installations.fromEnv=EDT_HOME,EDT_2026
+```
+
+## `onec.edt.installations.paths` {/* #onec-edt-installations-paths */}
+
+**По умолчанию:** нет
+
+Каталоги установленной 1С:EDT или каталоги, где установлено несколько её версий.
+
+```properties
+onec.edt.installations.paths=D:/1C/EDT
+```
+
+## `onec.platform.installations.fromEnv` {/* #onec-platform-installations-fromenv */}
+
+**По умолчанию:** `ONEC_HOME`
+
+Переменные окружения, в каждой из которых один путь к установке платформы.
+
+```properties
+onec.platform.installations.fromEnv=ONEC_HOME,V8_HOME
+```
+
+## `onec.platform.installations.paths` {/* #onec-platform-installations-paths */}
+
+**По умолчанию:** нет
+
+Каталоги установленной платформы или каталоги, где установлено несколько её версий.
+
+```properties
+onec.platform.installations.paths=D:/1cv8,E:/1C/8.3.25.1633
+```

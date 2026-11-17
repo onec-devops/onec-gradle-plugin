@@ -1,0 +1,346 @@
+---
+description: "Как собирать несколько проектов 1С одной сборкой Gradle."
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Многопроектная сборка
+
+Если несколько проектов 1С связаны между собой, их удобно держать в одном репозитории и
+собирать вместе. Gradle поддерживает это через многопроектные сборки: связанные проекты
+собираются одной сборкой, но каждый остаётся отдельным подпроектом со своими настройками.
+
+Например, конфигурацию центрального офиса и конфигурацию для касс магазинов, которые
+обмениваются с ней данными, можно собирать одной командой.
+
+Как устроены многопроектные сборки, подробно описано в [документации Gradle](https://docs.gradle.org/current/userguide/multi_project_builds.html).
+
+## Шаги {/* #steps */}
+
+Чтобы собрать несколько проектов вместе:
+
+1. [Подключите проекты](#including) в скрипте настроек.
+2. [Подключите плагин](#applying) в скрипте сборки каждого проекта.
+3. [Соберите проекты](#building) все вместе или по одному.
+
+## Подключение проектов {/* #including */}
+
+Каждый проект - это подкаталог со своим скриптом сборки и каталогом исходного кода:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```text
+my-project/
+├─ build.gradle.kts
+├─ gradlew
+├─ office/
+│  ├─ build.gradle.kts
+│  └─ src/
+├─ settings.gradle.kts
+└─ store/
+   ├─ build.gradle.kts
+   └─ src/
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```text
+my-project/
+├─ build.gradle
+├─ gradlew
+├─ office/
+│  ├─ build.gradle
+│  └─ src/
+├─ settings.gradle
+└─ store/
+   ├─ build.gradle
+   └─ src/
+```
+
+</TabItem>
+</Tabs>
+
+Перечислите проекты в скрипте настроек:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="settings.gradle.kts"
+rootProject.name = "my-project"
+
+include("office", "store")
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="settings.gradle"
+rootProject.name = 'my-project'
+
+include 'office', 'store'
+```
+
+</TabItem>
+</Tabs>
+
+## Подключение плагина {/* #applying */}
+
+Объявите плагин с версией в корневом скрипте сборки, но не применяйте его там:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="build.gradle.kts"
+plugins {
+    id("io.github.onec-devops.onec") version "0.2.0" apply false
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="build.gradle"
+plugins {
+    id 'io.github.onec-devops.onec' version '0.2.0' apply false
+}
+```
+
+</TabItem>
+</Tabs>
+
+Затем примените плагин в скрипте сборки каждого проекта, уже без версии:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="office/build.gradle.kts"
+plugins {
+    id("io.github.onec-devops.onec")
+}
+
+onec {
+    platformVersion = "8.3.25"
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="office/build.gradle"
+plugins {
+    id 'io.github.onec-devops.onec'
+}
+
+onec {
+    platformVersion = '8.3.25'
+}
+```
+
+</TabItem>
+</Tabs>
+
+:::tip
+
+Чтобы не повторять одни и те же настройки в каждом проекте, задайте их в
+[плагине-соглашении](#convention-plugin).
+
+:::
+
+## Сборка проектов {/* #building */}
+
+Соберите все проекты:
+
+<Tabs groupId="terminal">
+<TabItem value="bash" label="Bash">
+
+```bash
+./gradlew build
+```
+
+</TabItem>
+<TabItem value="powershell" label="PowerShell">
+
+```powershell
+.\gradlew build
+```
+
+</TabItem>
+</Tabs>
+
+Сборка завершается сообщением `BUILD SUCCESSFUL`, а каждый проект собирается в свой каталог:
+
+```text
+office/build/onec/office.cf
+store/build/onec/store.cf
+```
+
+Чтобы собрать только один проект, укажите его имя перед задачей:
+
+<Tabs groupId="terminal">
+<TabItem value="bash" label="Bash">
+
+```bash
+./gradlew :store:build
+```
+
+</TabItem>
+<TabItem value="powershell" label="PowerShell">
+
+```powershell
+.\gradlew :store:build
+```
+
+</TabItem>
+</Tabs>
+
+## Общие настройки в плагине-соглашении {/* #convention-plugin */}
+
+Проекты одного решения обычно собираются одной версией платформы: той, на которой они работают у
+пользователей. Если задавать `platformVersion` в каждом проекте, при переходе на новую платформу её
+придётся менять во всех скриптах сборки, и легко пропустить один из них.
+
+Поэтому настройки, одинаковые для всех проектов, задаются в
+[плагине-соглашении](https://docs.gradle.org/current/userguide/implementing_gradle_plugins_convention.html):
+отдельный скрипт сборки в каталоге `build-logic`, который каждый проект применяет вместо плагина
+onec. Gradle
+[рекомендует](https://docs.gradle.org/current/userguide/sharing_build_logic_between_subprojects.html)
+этот способ вместо настройки всех проектов из корневого скрипта сборки.
+
+Плагин-соглашение подключается в три шага. Сначала подключите `build-logic` в скрипте настроек:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="settings.gradle.kts"
+pluginManagement {
+    includeBuild("build-logic")
+}
+
+rootProject.name = "my-project"
+
+include("office", "store")
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="settings.gradle"
+pluginManagement {
+    includeBuild 'build-logic'
+}
+
+rootProject.name = 'my-project'
+
+include 'office', 'store'
+```
+
+</TabItem>
+</Tabs>
+
+Затем создайте в `build-logic` сборку с самим плагином-соглашением:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="build-logic/settings.gradle.kts"
+rootProject.name = "build-logic"
+```
+
+```kotlin title="build-logic/build.gradle.kts"
+plugins {
+    `kotlin-dsl`
+}
+
+repositories {
+    gradlePluginPortal()
+}
+
+dependencies {
+    implementation("io.github.onec-devops:onec-gradle-plugin:0.2.0")
+}
+```
+
+```kotlin title="build-logic/src/main/kotlin/onec-conventions.gradle.kts"
+plugins {
+    id("io.github.onec-devops.onec")
+}
+
+onec {
+    platformVersion = "8.3.25"
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="build-logic/settings.gradle"
+rootProject.name = 'build-logic'
+```
+
+```groovy title="build-logic/build.gradle"
+plugins {
+    id 'groovy-gradle-plugin'
+}
+
+repositories {
+    gradlePluginPortal()
+}
+
+dependencies {
+    implementation 'io.github.onec-devops:onec-gradle-plugin:0.2.0'
+}
+```
+
+```groovy title="build-logic/src/main/groovy/onec-conventions.gradle"
+plugins {
+    id 'io.github.onec-devops.onec'
+}
+
+onec {
+    platformVersion = '8.3.25'
+}
+```
+
+</TabItem>
+</Tabs>
+
+И наконец примените плагин-соглашение в каждом проекте вместо плагина onec:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="office/build.gradle.kts"
+plugins {
+    id("onec-conventions")
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="office/build.gradle"
+plugins {
+    id 'onec-conventions'
+}
+```
+
+</TabItem>
+</Tabs>
+
+Блок `plugins` в корневом скрипте сборки тогда не требуется: версия плагина задаётся только в
+`build-logic`.
+
+Кроме версии платформы, в плагине-соглашении можно задать и другие настройки, одинаковые во всех
+проектах (`edtVersion`, `srcDir`), а также плагины и задачи, общие для всех проектов. Если
+одни и те же соглашения нужны в нескольких репозиториях, плагин-соглашение можно собрать в
+отдельном репозитории, опубликовать и подключать по версии, как плагин onec.
+
+## См. также {/* #related-topics */}
+
+- Задайте общие настройки проектов: [все свойства плагина](../reference/extension.mdx).
+- [Ускорьте сборку](./performance.mdx): проекты многопроектной сборки можно собирать
+  параллельно.
+- Запустите [сборку в CI](./building-in-ci.mdx) на GitHub Actions или GitLab CI.

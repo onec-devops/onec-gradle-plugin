@@ -1,0 +1,290 @@
+---
+description: "How to apply the Gradle plugin to a 1C:Enterprise project and build your first file."
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Building a Project
+
+In this tutorial, you'll build a configuration from an XML dump or a 1C:EDT project.
+
+## Requirements {/* #requirements */}
+
+To build a project, you need:
+
+- [Gradle](https://gradle.org/install/) 9.0 or later
+- [Java](https://docs.gradle.org/current/userguide/compatibility.html) 17 or later to run Gradle
+- [1C:Enterprise platform](https://releases.1c.ru/project/Platform83) 8.3 with the
+  [standalone server](https://its.1c.ru/db/v8314doc#bookmark:adm:TI000000894)
+- [1C:EDT](https://edt.1c.ru/), only for 1C:EDT projects
+
+The plugin finds the platform and 1C:EDT in their standard locations automatically. For other
+locations, use [Gradle properties](../reference/gradle-properties.mdx).
+
+## Steps {/* #steps */}
+
+To build a project:
+
+1. [Initialize a Gradle project](#initializing-the-project) that defines how the project is built.
+2. [Apply the plugin](#applying-the-plugin) so Gradle can build 1C:Enterprise projects.
+3. [Specify the source code and build the configuration](#building-cf).
+
+## Initializing a Gradle Project {/* #initializing-the-project */}
+
+If the repository already has a Gradle project, skip to the next step. Otherwise, run `gradle init`
+in the repository root, for example `my-project`:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```bash
+gradle init --type basic --dsl kotlin --use-defaults
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```bash
+gradle init --type basic --dsl groovy --use-defaults
+```
+
+</TabItem>
+</Tabs>
+
+The command creates the build scripts and the Gradle Wrapper, `gradlew`, which you use to run the
+build from now on. When it finishes with `BUILD SUCCESSFUL`, the directory contains these files:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```text
+my-project/
+├─ .gitattributes
+├─ .gitignore
+├─ build.gradle.kts
+├─ gradle/
+│  ├─ libs.versions.toml
+│  └─ wrapper/
+├─ gradle.properties
+├─ gradlew
+├─ gradlew.bat
+└─ settings.gradle.kts
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```text
+my-project/
+├─ .gitattributes
+├─ .gitignore
+├─ build.gradle
+├─ gradle/
+│  ├─ libs.versions.toml
+│  └─ wrapper/
+├─ gradle.properties
+├─ gradlew
+├─ gradlew.bat
+└─ settings.gradle
+```
+
+</TabItem>
+</Tabs>
+
+To learn what each of these files does, see the
+[Gradle tutorial](https://docs.gradle.org/current/userguide/part1_gradle_init.html#part1_begin).
+
+## Adding the Plugin to the Build Script {/* #applying-the-plugin */}
+
+In the `build.gradle.kts` or `build.gradle` build script, add a `plugins` block with the plugin and
+an `onec` block with the platform version. If the script already has a `plugins` block, add the
+plugin to it:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="build.gradle.kts"
+plugins {
+    id("io.github.onec-devops.onec") version "0.2.0"
+}
+
+onec {
+    platformVersion = "8.3.25"
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="build.gradle"
+plugins {
+    id 'io.github.onec-devops.onec' version '0.2.0'
+}
+
+onec {
+    platformVersion = '8.3.25'
+}
+```
+
+</TabItem>
+</Tabs>
+
+`platformVersion` is the platform version used for the build, either full or a prefix: `8.3.25`
+selects the newest installed 8.3.25.x. On the first run, Gradle downloads the plugin from the
+[Gradle Plugin Portal](https://plugins.gradle.org/plugin/io.github.onec-devops.onec).
+
+For a 1C:EDT project, also set the 1C:EDT version in `edtVersion`. As with the platform, it can be
+a full version or a prefix:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="build.gradle.kts"
+onec {
+    platformVersion = "8.3.25"
+    edtVersion = "2026.2"
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="build.gradle"
+onec {
+    platformVersion = '8.3.25'
+    edtVersion = '2026.2'
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Building a 1C:Enterprise Configuration {/* #building-cf */}
+
+Put the configuration XML dump or the 1C:EDT project directly in the source directory, not in a
+subdirectory. To learn how to get the source code and how to lay it out, see
+[Preparing the Source Code](./preparing-sources.mdx). By default, the source directory is `src` in
+the project directory. For example, for an XML dump:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```text
+my-project/
+├─ build.gradle.kts
+├─ gradlew
+├─ settings.gradle.kts
+└─ src/
+   ├─ Configuration.xml
+   └─ ...
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```text
+my-project/
+├─ build.gradle
+├─ gradlew
+├─ settings.gradle
+└─ src/
+   ├─ Configuration.xml
+   └─ ...
+```
+
+</TabItem>
+</Tabs>
+
+:::tip
+
+Add the `ConfigDumpInfo.xml` service file to `.gitignore`. It changes whenever any object changes
+and causes merge conflicts.
+
+:::
+
+If the dump is already in another directory, point `srcDir` to it:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="build.gradle.kts"
+onec {
+    platformVersion = "8.3.25"
+    srcDir = file("configuration")
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="build.gradle"
+onec {
+    platformVersion = '8.3.25'
+    srcDir = file('configuration')
+}
+```
+
+</TabItem>
+</Tabs>
+
+Run the build:
+
+<Tabs groupId="terminal">
+<TabItem value="bash" label="Bash">
+
+```bash
+./gradlew build
+```
+
+</TabItem>
+<TabItem value="powershell" label="PowerShell">
+
+```powershell
+.\gradlew build
+```
+
+</TabItem>
+</Tabs>
+
+When the build finishes with `BUILD SUCCESSFUL`, the artifact is in `build/onec/my-project.cf`.
+Building a 1C:EDT project launches 1C:EDT, so even a small project takes about a minute.
+
+If the source code hasn't changed, the next build is skipped and the build task is marked
+`UP-TO-DATE`. To learn what the build depends on, see [Tasks](../reference/tasks.mdx#onecbuild).
+
+## Artifact Name {/* #artifact-name */}
+
+The artifact is named after the Gradle project: `my-project.cf`. To use a different name, set the
+standard Gradle property `base.archivesName`:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="build.gradle.kts"
+base {
+    archivesName = "configuration"
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="build.gradle"
+base {
+    archivesName = 'configuration'
+}
+```
+
+</TabItem>
+</Tabs>
+
+The next build produces `build/onec/configuration.cf`. The file with the old name remains in
+`build/onec/` until you run `./gradlew clean`.
+
+## Related Topics {/* #related-topics */}
+
+- Configure the plugin for your project: [all plugin properties](../reference/extension.mdx).
+- Build several 1C:Enterprise projects in a [multi-project build](../guides/multi-project-builds.mdx).
+- [Speed up the build](../guides/performance.mdx) with Gradle caching and parallel builds.
+- [Build in CI](../guides/building-in-ci.mdx) with GitHub Actions or GitLab CI.

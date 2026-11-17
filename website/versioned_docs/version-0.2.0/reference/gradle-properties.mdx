@@ -1,0 +1,47 @@
+---
+description: "The Gradle properties that configure the Gradle plugin for 1C:Enterprise."
+---
+
+# Gradle Properties
+
+The plugin supports the following Gradle properties.
+
+## `onec.edt.installations.fromEnv` {/* #onec-edt-installations-fromenv */}
+
+**Default:** `EDT_HOME`
+
+Environment variables that each contain one path to a 1C:EDT installation.
+
+```properties
+onec.edt.installations.fromEnv=EDT_HOME,EDT_2026
+```
+
+## `onec.edt.installations.paths` {/* #onec-edt-installations-paths */}
+
+**Default:** none
+
+1C:EDT installation directories, or directories that contain several installed versions.
+
+```properties
+onec.edt.installations.paths=D:/1C/EDT
+```
+
+## `onec.installations.fromEnv` {/* #onec-installations-fromenv */}
+
+**Default:** `ONEC_HOME`
+
+Environment variables that each contain one path to a platform installation.
+
+```properties
+onec.installations.fromEnv=ONEC_HOME,V8_HOME
+```
+
+## `onec.installations.paths` {/* #onec-installations-paths */}
+
+**Default:** none
+
+Platform installation directories, or directories that contain several installed versions.
+
+```properties
+onec.installations.paths=D:/1cv8,E:/1C/8.3.25.1633
+```

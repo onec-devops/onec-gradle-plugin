@@ -1,0 +1,294 @@
+---
+description: "Как подключить Gradle-плагин к проекту на 1С и собрать первый файл."
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Сборка проекта
+
+В этом руководстве вы соберёте конфигурацию из XML-выгрузки или проекта 1С:EDT.
+
+## Требования {/* #requirements */}
+
+Для сборки требуются:
+
+- [Gradle](https://gradle.org/install/) 9.0 или новее
+- [Java](https://docs.gradle.org/current/userguide/compatibility.html) 17 или новее для запуска
+  Gradle
+- [Платформа 1С:Предприятие](https://releases.1c.ru/project/Platform83) 8.3 с
+  [автономным сервером](https://its.1c.ru/db/v8314doc#bookmark:adm:TI000000894)
+- [1С:EDT](https://edt.1c.ru/), только для проектов 1С:EDT
+
+Плагин сам находит платформу и 1С:EDT в стандартных каталогах, а другие каталоги задаются
+[свойствами Gradle](../reference/gradle-properties.mdx).
+
+## Шаги {/* #steps */}
+
+Чтобы собрать проект:
+
+1. [Инициализируйте проект Gradle](#initializing-the-project), в котором описывается, как собирается проект.
+2. [Подключите плагин](#applying-the-plugin), чтобы Gradle умел собирать проекты на 1С.
+3. [Укажите исходный код и соберите конфигурацию](#building-cf).
+
+## Инициализация проекта Gradle {/* #initializing-the-project */}
+
+Если в репозитории уже есть проект Gradle, переходите к следующему шагу. Если нет, его создаёт
+`gradle init`, запущенный в корне репозитория, например `my-project`:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```bash
+gradle init --type basic --dsl kotlin --use-defaults
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```bash
+gradle init --type basic --dsl groovy --use-defaults
+```
+
+</TabItem>
+</Tabs>
+
+Команда создаёт скрипты сборки и Gradle Wrapper, `gradlew`, через который дальше и запускается
+сборка. Она завершается сообщением `BUILD SUCCESSFUL`, а в каталоге появляются файлы:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```text
+my-project/
+├─ .gitattributes
+├─ .gitignore
+├─ build.gradle.kts
+├─ gradle/
+│  ├─ libs.versions.toml
+│  └─ wrapper/
+├─ gradle.properties
+├─ gradlew
+├─ gradlew.bat
+└─ settings.gradle.kts
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```text
+my-project/
+├─ .gitattributes
+├─ .gitignore
+├─ build.gradle
+├─ gradle/
+│  ├─ libs.versions.toml
+│  └─ wrapper/
+├─ gradle.properties
+├─ gradlew
+├─ gradlew.bat
+└─ settings.gradle
+```
+
+</TabItem>
+</Tabs>
+
+Что делает каждый из этих файлов, описано в
+[руководстве Gradle](https://docs.gradle.org/current/userguide/part1_gradle_init.html#part1_begin).
+
+## Добавление плагина в скрипт сборки {/* #applying-the-plugin */}
+
+Добавьте в скрипт сборки `build.gradle.kts` или `build.gradle` блок `plugins` с плагином и блок
+`onec` с версией платформы. Если блок `plugins` в скрипте уже есть, добавьте строку с плагином в
+него:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="build.gradle.kts"
+plugins {
+    id("io.github.onec-devops.onec") version "0.2.0"
+}
+
+onec {
+    platformVersion = "8.3.25"
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="build.gradle"
+plugins {
+    id 'io.github.onec-devops.onec' version '0.2.0'
+}
+
+onec {
+    platformVersion = '8.3.25'
+}
+```
+
+</TabItem>
+</Tabs>
+
+`platformVersion` - версия платформы для сборки, полная или её начало: под `8.3.25` берётся самая
+новая установленная 8.3.25.x. При первом запуске Gradle скачивает плагин из
+[Gradle Plugin Portal](https://plugins.gradle.org/plugin/io.github.onec-devops.onec).
+
+Для проекта 1С:EDT дополнительно укажите версию 1С:EDT в
+`edtVersion`. Как и у платформы, это
+полная версия или её начало:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="build.gradle.kts"
+onec {
+    platformVersion = "8.3.25"
+    edtVersion = "2026.2"
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="build.gradle"
+onec {
+    platformVersion = '8.3.25'
+    edtVersion = '2026.2'
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Сборка конфигурации 1С {/* #building-cf */}
+
+Поместите XML-выгрузку конфигурации или проект 1С:EDT прямо в каталог исходного кода, без
+вложенного каталога. Как получить исходный код и как он должен быть устроен, описано на странице
+[Подготовка исходного кода](./preparing-sources.mdx). По умолчанию каталог исходного кода - `src` в
+каталоге проекта, например для XML-выгрузки:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```text
+my-project/
+├─ build.gradle.kts
+├─ gradlew
+├─ settings.gradle.kts
+└─ src/
+   ├─ Configuration.xml
+   └─ ...
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```text
+my-project/
+├─ build.gradle
+├─ gradlew
+├─ settings.gradle
+└─ src/
+   ├─ Configuration.xml
+   └─ ...
+```
+
+</TabItem>
+</Tabs>
+
+:::tip
+
+Служебный файл выгрузки `ConfigDumpInfo.xml` лучше добавить в `.gitignore`: он меняется вместе с
+каждым объектом и вызывает конфликты при слиянии веток.
+
+:::
+
+Если выгрузка уже есть в другом каталоге, его можно указать в `srcDir`:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="build.gradle.kts"
+onec {
+    platformVersion = "8.3.25"
+    srcDir = file("configuration")
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="build.gradle"
+onec {
+    platformVersion = '8.3.25'
+    srcDir = file('configuration')
+}
+```
+
+</TabItem>
+</Tabs>
+
+Запустите сборку:
+
+<Tabs groupId="terminal">
+<TabItem value="bash" label="Bash">
+
+```bash
+./gradlew build
+```
+
+</TabItem>
+<TabItem value="powershell" label="PowerShell">
+
+```powershell
+.\gradlew build
+```
+
+</TabItem>
+</Tabs>
+
+Сборка завершается сообщением `BUILD SUCCESSFUL`, а артефакт появляется в
+`build/onec/my-project.cf`. Сборка проекта 1С:EDT запускает 1С:EDT, поэтому даже маленький
+проект собирается около минуты.
+
+Повторная сборка без изменений в исходном коде пропускается: задача сборки отмечается как
+`UP-TO-DATE`. От чего зависит сборка, описано на странице
+[Задачи](../reference/tasks.mdx#onecbuild).
+
+## Имя артефакта {/* #artifact-name */}
+
+Артефакт называется `my-project.cf` по имени проекта Gradle. Чтобы назвать его иначе,
+задайте стандартное свойство Gradle `base.archivesName`:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="build.gradle.kts"
+base {
+    archivesName = "configuration"
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="build.gradle"
+base {
+    archivesName = 'configuration'
+}
+```
+
+</TabItem>
+</Tabs>
+
+Следующая сборка соберёт файл `build/onec/configuration.cf`. Файл со старым именем остаётся в
+`build/onec/`, пока не выполнена `./gradlew clean`.
+
+## См. также {/* #related-topics */}
+
+- Настройте плагин под свой проект: [все свойства плагина](../reference/extension.mdx).
+- Соберите несколько проектов 1С в [многопроектной сборке](../guides/multi-project-builds.mdx).
+- [Ускорьте сборку](../guides/performance.mdx) кэшем и параллельной сборкой Gradle.
+- Запустите [сборку в CI](../guides/building-in-ci.mdx) на GitHub Actions или GitLab CI.

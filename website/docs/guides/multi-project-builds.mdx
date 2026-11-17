@@ -1,0 +1,348 @@
+---
+description: "How to build several 1C:Enterprise projects in one Gradle build."
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Multi-Project Builds
+
+Related 1C:Enterprise projects are easier to manage in one repository with one build. Gradle
+supports this with multi-project builds: related projects are built together, while each remains a
+separate subproject with its own settings.
+
+For example, you can build a head office configuration and a store checkout configuration that
+exchanges data with it in a single command.
+
+To learn more about multi-project builds, see the
+[Gradle documentation](https://docs.gradle.org/current/userguide/multi_project_builds.html).
+
+## Steps {/* #steps */}
+
+To build several projects together:
+
+1. [Include the projects](#including) in the settings script.
+2. [Apply the plugin](#applying) in the build script of each project.
+3. [Build the projects](#building), all at once or one at a time.
+
+## Including the Projects {/* #including */}
+
+Each project is a subdirectory with its own build script and source directory:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```text
+my-project/
+├─ build.gradle.kts
+├─ gradlew
+├─ office/
+│  ├─ build.gradle.kts
+│  └─ src/
+├─ settings.gradle.kts
+└─ store/
+   ├─ build.gradle.kts
+   └─ src/
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```text
+my-project/
+├─ build.gradle
+├─ gradlew
+├─ office/
+│  ├─ build.gradle
+│  └─ src/
+├─ settings.gradle
+└─ store/
+   ├─ build.gradle
+   └─ src/
+```
+
+</TabItem>
+</Tabs>
+
+List the projects in the settings script:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="settings.gradle.kts"
+rootProject.name = "my-project"
+
+include("office", "store")
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="settings.gradle"
+rootProject.name = 'my-project'
+
+include 'office', 'store'
+```
+
+</TabItem>
+</Tabs>
+
+## Applying the Plugin {/* #applying */}
+
+Declare the plugin and its version in the root build script, but don't apply it there:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="build.gradle.kts"
+plugins {
+    id("io.github.onec-devops.onec") version "0.2.0" apply false
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="build.gradle"
+plugins {
+    id 'io.github.onec-devops.onec' version '0.2.0' apply false
+}
+```
+
+</TabItem>
+</Tabs>
+
+Then apply the plugin in each project's build script, without a version:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="office/build.gradle.kts"
+plugins {
+    id("io.github.onec-devops.onec")
+}
+
+onec {
+    platformVersion = "8.3.25"
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="office/build.gradle"
+plugins {
+    id 'io.github.onec-devops.onec'
+}
+
+onec {
+    platformVersion = '8.3.25'
+}
+```
+
+</TabItem>
+</Tabs>
+
+:::tip
+
+To avoid repeating the same settings in each project, set them in a
+[convention plugin](#convention-plugin).
+
+:::
+
+## Building the Projects {/* #building */}
+
+Build all projects:
+
+<Tabs groupId="terminal">
+<TabItem value="bash" label="Bash">
+
+```bash
+./gradlew build
+```
+
+</TabItem>
+<TabItem value="powershell" label="PowerShell">
+
+```powershell
+.\gradlew build
+```
+
+</TabItem>
+</Tabs>
+
+When the build finishes with `BUILD SUCCESSFUL`, each project's artifact is in its own directory:
+
+```text
+office/build/onec/office.cf
+store/build/onec/store.cf
+```
+
+To build a single project, prefix the task with the project name:
+
+<Tabs groupId="terminal">
+<TabItem value="bash" label="Bash">
+
+```bash
+./gradlew :store:build
+```
+
+</TabItem>
+<TabItem value="powershell" label="PowerShell">
+
+```powershell
+.\gradlew :store:build
+```
+
+</TabItem>
+</Tabs>
+
+## Shared Settings in a Convention Plugin {/* #convention-plugin */}
+
+The projects of a solution usually build with the same platform version: the one their users run.
+If you set `platformVersion` in each project, upgrading the platform means changing every build
+script, and it's easy to miss one.
+
+Instead, put settings shared by all projects in a
+[convention plugin](https://docs.gradle.org/current/userguide/implementing_gradle_plugins_convention.html):
+a separate build script in the `build-logic` directory that each project applies instead of the
+onec plugin. Gradle
+[recommends](https://docs.gradle.org/current/userguide/sharing_build_logic_between_subprojects.html)
+this approach over configuring all projects from the root build script.
+
+Setting up a convention plugin takes three steps. First, include `build-logic` in the settings
+script:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="settings.gradle.kts"
+pluginManagement {
+    includeBuild("build-logic")
+}
+
+rootProject.name = "my-project"
+
+include("office", "store")
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="settings.gradle"
+pluginManagement {
+    includeBuild 'build-logic'
+}
+
+rootProject.name = 'my-project'
+
+include 'office', 'store'
+```
+
+</TabItem>
+</Tabs>
+
+Then create a build in `build-logic` that contains the convention plugin:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="build-logic/settings.gradle.kts"
+rootProject.name = "build-logic"
+```
+
+```kotlin title="build-logic/build.gradle.kts"
+plugins {
+    `kotlin-dsl`
+}
+
+repositories {
+    gradlePluginPortal()
+}
+
+dependencies {
+    implementation("io.github.onec-devops:onec-gradle-plugin:0.2.0")
+}
+```
+
+```kotlin title="build-logic/src/main/kotlin/onec-conventions.gradle.kts"
+plugins {
+    id("io.github.onec-devops.onec")
+}
+
+onec {
+    platformVersion = "8.3.25"
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="build-logic/settings.gradle"
+rootProject.name = 'build-logic'
+```
+
+```groovy title="build-logic/build.gradle"
+plugins {
+    id 'groovy-gradle-plugin'
+}
+
+repositories {
+    gradlePluginPortal()
+}
+
+dependencies {
+    implementation 'io.github.onec-devops:onec-gradle-plugin:0.2.0'
+}
+```
+
+```groovy title="build-logic/src/main/groovy/onec-conventions.gradle"
+plugins {
+    id 'io.github.onec-devops.onec'
+}
+
+onec {
+    platformVersion = '8.3.25'
+}
+```
+
+</TabItem>
+</Tabs>
+
+Finally, apply the convention plugin in each project instead of the onec plugin:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="office/build.gradle.kts"
+plugins {
+    id("onec-conventions")
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="office/build.gradle"
+plugins {
+    id 'onec-conventions'
+}
+```
+
+</TabItem>
+</Tabs>
+
+You no longer need the `plugins` block in the root build script: the plugin version is set only in
+`build-logic`.
+
+Besides the platform version, a convention plugin can hold any other settings shared by all
+projects (`edtVersion`, `srcDir`), as well as shared plugins and tasks. If several repositories need
+the same conventions, you can build the convention plugin in its own repository, publish it, and
+apply it by version, like the onec plugin.
+
+## Related Topics {/* #related-topics */}
+
+- Set the shared settings of the projects: [all plugin properties](../reference/extension.mdx).
+- [Speed up the build](./performance.mdx) by building the projects of a multi-project build in
+  parallel.
+- [Build in CI](./building-in-ci.mdx) with GitHub Actions or GitLab CI.

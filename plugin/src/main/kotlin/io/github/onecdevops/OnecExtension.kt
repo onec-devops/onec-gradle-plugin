@@ -7,7 +7,7 @@ abstract class OnecExtension {
     /** Full platform version or its leading part, e.g. `8.3.25`; the newest matching installation is used. */
     abstract val platformVersion: Property<String>
 
-    /** Full 1C:EDT version or its leading part, e.g. `2026.1`; needed only to build 1C:EDT projects. */
+    /** Full 1C:EDT version or its leading part, e.g. `2026.2`; needed only to build 1C:EDT projects. */
     abstract val edtVersion: Property<String>
 
     /**

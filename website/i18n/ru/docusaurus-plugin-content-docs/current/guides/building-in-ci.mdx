@@ -1,0 +1,111 @@
+---
+description: "Как собирать проекты 1С в CI с помощью Gradle."
+---
+
+# Сборка в CI
+
+Чтобы собирать проект в CI, раннер должен отвечать
+[требованиям](../getting-started/first-build.mdx#requirements). Нужные программы можно установить на него или
+взять готовыми из Docker-образа.
+
+:::tip
+
+Проще всего собрать образ для CI с помощью нашего проекта
+[onec-docker](https://github.com/onec-devops/onec-docker). В образ сразу входят платформа
+1С:Предприятие, 1С:EDT и Java нужных версий. Сам плагин тестируется на этих же образах.
+
+:::
+
+Плагин сам находит платформу и 1С:EDT в стандартных каталогах образа, поэтому в задаче (job) ничего
+ставить и настраивать не нужно. Лицензия платформы для сборки не требуется, так что подойдёт любой
+раннер с контейнерами. Как запускать в них задачи, описано в документации
+[GitHub Actions](https://docs.github.com/en/actions/how-tos/write-workflows/choose-where-workflows-run/run-jobs-in-a-container)
+и [GitLab CI](https://docs.gitlab.com/ci/docker/using_docker_images/).
+
+Публиковать образ открыто не разрешает лицензия платформы. Храните его в закрытом реестре,
+например в пакетах организации на GitHub или в реестре контейнеров проекта GitLab, и дайте
+задаче доступ на чтение.
+
+`./gradlew build` не только собирает файлы, но и выполняет проверки из задачи Gradle `check`, например
+проверку кода, если она добавлена в сборку. Чтобы только собрать файлы, без проверок, запустите
+`./gradlew assemble`.
+
+Следующие примеры показывают минимальную настройку. Как запускать Gradle в любом CI, например с
+кэшем сборки и кэшем конфигурации, описано в
+[документации Gradle](https://docs.gradle.org/current/userguide/gradle_on_ci.html).
+
+## GitHub Actions {/* #github-actions */}
+
+Образ берётся из GitHub Container Registry владельца репозитория. Он закрытый, поэтому репозиторию
+требуется доступ на чтение к нему: в настройках пакета выберите **Manage Actions access**. Артефакты
+загружаются в запуск (workflow run), их можно скачать на его странице.
+
+```yaml title=".github/workflows/ci.yml"
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/1cv8-server:8.3.25.1633
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+      # Платформа падает под пользователем раннера, которого нет в образе.
+      options: --user root
+    steps:
+      - uses: actions/checkout@v7
+      - uses: gradle/actions/setup-gradle@v6
+      - run: ./gradlew build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: onec
+          path: |
+            **/build/onec/*.cf
+            **/build/onec/*.cfe
+            **/build/onec/*.epf
+            **/build/onec/*.erf
+```
+
+Как проверять Gradle Wrapper, показывать отчёт о сборке в сводке запуска и собирать сразу на
+нескольких версиях, описано в
+[документации Gradle для GitHub Actions](https://docs.gradle.org/current/userguide/github-actions.html).
+
+## GitLab CI {/* #gitlab-ci */}
+
+Образ берётся из реестра контейнеров проекта, и GitLab загружает его без дополнительных настроек.
+Артефакты сохраняются в задаче, их можно скачать на её странице. Каталог Gradle перенесён в
+каталог проекта, чтобы GitLab мог сохранять его кэш между запусками.
+
+```yaml title=".gitlab-ci.yml"
+build:
+  image: $CI_REGISTRY_IMAGE/1cv8-server:8.3.25.1633
+  variables:
+    GRADLE_USER_HOME: $CI_PROJECT_DIR/.gradle
+  script:
+    - ./gradlew build
+  artifacts:
+    paths:
+      - "**/build/onec/*.cf"
+      - "**/build/onec/*.cfe"
+      - "**/build/onec/*.epf"
+      - "**/build/onec/*.erf"
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - .gradle/caches
+      - .gradle/wrapper
+      - .gradle/notifications
+```
+
+Как настроить кэш для общих раннеров и между стадиями, разделить задачи для merge request и веток
+или выпускать релизы, описано в
+[документации Gradle для GitLab CI](https://docs.gradle.org/current/userguide/gitlab-ci.html).

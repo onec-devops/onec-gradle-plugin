@@ -12,6 +12,7 @@ jobs:
       packages: read
 
   release:
+    name: Publish to Gradle Plugin Portal
     needs: build
     runs-on: ubuntu-latest
     permissions:

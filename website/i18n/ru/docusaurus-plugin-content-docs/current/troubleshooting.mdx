@@ -1,0 +1,191 @@
+---
+description: "Частые проблемы при работе с Gradle-плагином для 1С и способы их исправить."
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Решение проблем
+
+При работе с плагином вы можете столкнуться со следующими проблемами.
+
+## Ошибка: `1C:Enterprise platform … with ibcmd not found` {/* #platform-not-found */}
+
+```text
+1C:Enterprise platform 8.3.25 with ibcmd not found, looked in:
+  C:\Program Files\1cv8  (standard location)
+  C:\Program Files (x86)\1cv8  (standard location)
+List the installations in the Gradle property onec.platform.installations.paths, or name the environment variables that point to them in onec.platform.installations.fromEnv (ONEC_HOME by default).
+```
+
+Плагин не нашёл установку платформы с версией из `platformVersion`.
+
+Чтобы исправить:
+
+1. Посмотрите, какие установки нашёл плагин, в выводе задачи `onecInstallations`.
+2. Если нужной версии нет, установите её. Если платформа установлена не в стандартный каталог,
+   укажите путь в свойстве Gradle `onec.platform.installations.paths`, см.
+   [Свойства Gradle](./reference/gradle-properties.mdx).
+
+## Ошибка: `1C:EDT … with 1cedtcli not found` {/* #edt-not-found */}
+
+Плагин не нашёл установку 1С:EDT с версией из `edtVersion`.
+
+Чтобы исправить:
+
+1. Посмотрите, какие установки нашёл плагин, в выводе задачи `onecInstallations`.
+2. Если нужной версии нет, установите её. Если 1С:EDT установлена не в стандартный каталог,
+   укажите путь в свойстве Gradle `onec.edt.installations.paths`, см.
+   [Свойства Gradle](./reference/gradle-properties.mdx).
+
+## Ошибка: `'onec.platformVersion' is not set` {/* #version-not-set */}
+
+В блоке `onec` не задана `platformVersion`, а она обязательна для любой сборки. Ошибка
+`'onec.edtVersion' is not set` означает то же про `edtVersion`, которая обязательна для проекта
+1С:EDT.
+
+Чтобы исправить, укажите версию в блоке `onec`:
+
+<Tabs groupId="gradle-dsl">
+<TabItem value="kotlin" label="Kotlin">
+
+```kotlin title="build.gradle.kts"
+onec {
+    platformVersion = "8.3.25"
+}
+```
+
+</TabItem>
+<TabItem value="groovy" label="Groovy">
+
+```groovy title="build.gradle"
+onec {
+    platformVersion = '8.3.25'
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Ошибка: `ibcmd infobase config import failed` {/* #ibcmd-failed */}
+
+```text
+ibcmd infobase config import failed with exit code ...:
+...
+```
+
+Платформа не смогла загрузить исходный код. Причину называет сообщение `ibcmd` после первой строки.
+
+Частые причины:
+
+- Выгрузка неполная.
+- Выгрузка сделана более новой платформой, чем та, что используется для сборки: платформа не
+  загружает выгрузку в формате новее своего.
+- Расширение или обработка ссылаются на объекты конфигурации, см.
+  [Не собираются расширения и обработки, которые ссылаются на конфигурацию](#configuration-references).
+
+## Не собираются расширения и обработки, которые ссылаются на конфигурацию {/* #configuration-references */}
+
+```text
+ibcmd infobase config import failed with exit code -1:
+  [INFO] Импорт конфигурации из XML...
+  [ERROR] Операция невозможна: при выполнении импорта конфигурации из XML обнаружены критичные ошибки
+  [ERROR] Импорт конфигурации из XML завершен с ошибкой
+  [ERROR] Неизвестное имя типа - CatalogRef.Номенклатура
+```
+
+Сборка загружает исходный код в пустую информационную базу. Если расширение или обработка ссылаются
+на объекты конфигурации, которых нет в них самих, например реквизит типа
+`СправочникСсылка.Номенклатура`, платформа не может разрешить такую ссылку, и загрузка
+завершается ошибкой.
+
+Сейчас плагин собирает расширения и обработки только в пустой информационной базе, поэтому такие
+расширения и обработки не собираются.
+
+## Ошибка: `Отсутствует контейнер метаданных` {/* #missing-metadata-container */}
+
+В XML-выгрузке обработки или отчёта рядом с файлом описания `<ИмяОбъекта>.xml` нет каталога
+`<ИмяОбъекта>`, например `DataProcessor/` рядом с `DataProcessor.xml`.
+
+Чтобы исправить, создайте этот каталог и добавьте в него хотя бы модуль объекта, пусть и пустой:
+`<ИмяОбъекта>/Ext/ObjectModule.bsl`.
+
+## Вместо обработки или отчёта собирается пустая конфигурация {/* #empty-configuration */}
+
+В XML-выгрузке обработки или отчёта каталог `<ИмяОбъекта>` рядом с файлом описания
+`<ИмяОбъекта>.xml` пуст. Сборка проходит без ошибок, но артефактом оказывается пустая
+конфигурация, хотя у файла расширение `.epf` или `.erf`: при выгрузке обратно в XML из него
+получается `Configuration.xml`.
+
+Чтобы исправить, добавьте в каталог хотя бы модуль объекта, пусть и пустой:
+`<ИмяОбъекта>/Ext/ObjectModule.bsl`.
+
+## Сборка зависает на выгрузке проекта 1С:EDT {/* #edt-hangs */}
+
+1С:EDT не поддерживает версию платформы проекта (`Runtime-Version` в `DT-INF/PROJECT.PMF`) или
+вообще не может открыть проект. В этом случае выгрузка надолго зависает и завершается ошибкой.
+
+Чтобы проверить, какие версии платформы поддерживает 1С:EDT, выполните:
+
+```bash
+1cedtcli -command platform-versions
+```
+
+Если версии проекта среди них нет, используйте 1С:EDT, которая её поддерживает.
+
+## 1cedtcli из 1С:EDT Start не запускается {/* #edt-start-java */}
+
+`1cedtcli` из установки 1С:EDT Start запускается на `java`, найденной в `PATH`, и её версия должна
+подходить этой версии 1С:EDT.
+
+Чтобы исправить, добавьте в `PATH` каталог `bin` Java той версии, которая указана в системных
+требованиях 1С:EDT.
+
+## Ошибка: `1cedtcli export exported nothing` {/* #edt-exported-nothing */}
+
+Выгрузка проекта 1С:EDT не удалась. Причину называет вывод `1cedtcli`: плагин показывает его в
+сообщении об ошибке сразу после строки `1cedtcli export exported nothing`.
+
+## Ошибка: `The 1C:EDT project … must hold one external data processor or report to build` {/* #edt-several-objects */}
+
+Проект внешних обработок и отчётов собирается в один артефакт, поэтому в нём должна быть ровно одна
+обработка или отчёт.
+
+Чтобы исправить, перенесите каждую обработку или отчёт в отдельный проект.
+
+## Ошибка: `Cannot create a directory for the named pipes` {/* #named-pipes */}
+
+В Linux несколько `ibcmd`, запущенных одновременно в свежем контейнере, могут завершиться этой
+ошибкой, например в многопроектной сборке с `--parallel`.
+
+Чтобы исправить, запустите сборку повторно: первый запуск оставляет нужный каталог, и повторный
+проходит.
+
+## Ошибка: `The onec plugin requires Gradle 9.1.0 or newer` {/* #gradle-version */}
+
+Версия Gradle, на которой запущена сборка, ниже минимальной для плагина.
+
+Чтобы исправить, переведите проект на новый Gradle через Gradle Wrapper:
+
+<Tabs groupId="terminal">
+<TabItem value="bash" label="Bash">
+
+```bash
+./gradlew wrapper --gradle-version <версия>
+```
+
+</TabItem>
+<TabItem value="powershell" label="PowerShell">
+
+```powershell
+.\gradlew wrapper --gradle-version <версия>
+```
+
+</TabItem>
+</Tabs>
+
+## Проблема не решена {/* #still-having-issues */}
+
+Если вашей проблемы здесь нет или способ не помог,
+[создайте issue на GitHub](https://github.com/onec-devops/onec-gradle-plugin/issues/new) и
+приложите вывод сборки с флагом `--stacktrace`.

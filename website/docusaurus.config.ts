@@ -2,36 +2,33 @@ import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
-// This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
-
+const repositoryUrl = 'https://github.com/onec-devops/onec-gradle-plugin';
 const config: Config = {
-  title: 'My Site',
-  tagline: 'Dinosaurs are cool',
+  title: 'Onec Gradle Plugin',
+  tagline: 'Gradle support for 1C:Enterprise development',
+  favicon: 'img/favicon.png',
 
-  // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
   future: {
-    v4: true, // Improve compatibility with the upcoming Docusaurus v4
+    v4: true,
   },
 
-  // Set the production url of your site here
-  url: 'https://your-docusaurus-site.example.com',
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/',
-
-  // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'facebook', // Usually your GitHub org/user name.
-  projectName: 'docusaurus', // Usually your repo name.
+  url: 'https://onec-devops.github.io',
+  baseUrl: '/onec-gradle-plugin/',
+  organizationName: 'onec-devops',
+  projectName: 'onec-gradle-plugin',
+  trailingSlash: false,
 
   onBrokenLinks: 'throw',
+  onBrokenAnchors: 'throw',
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'throw',
+    },
+  },
 
-  // Even if you don't use internationalization, you can use this field to set
-  // useful metadata like html lang. For example, if your site is Chinese, you
-  // may want to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
-    locales: ['en'],
+    locales: ['en', 'ru'],
   },
 
   presets: [
@@ -41,12 +38,11 @@ const config: Config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl: `${repositoryUrl}/edit/main/website/`,
+          editLocalizedFiles: true,
         },
         blog: false,
+        pages: false,
         theme: {
           customCss: './src/css/custom.css',
         },
@@ -54,17 +50,60 @@ const config: Config = {
     ],
   ],
 
+  themes: [
+    [
+      '@easyops-cn/docusaurus-search-local',
+      {
+        hashed: true,
+        language: ['en', 'ru'],
+        docsRouteBasePath: '/',
+        indexBlog: false,
+        indexPages: false,
+      },
+    ],
+  ],
+
   themeConfig: {
+    image: 'img/social-card.png',
+    metadata: [{name: 'google-site-verification', content: '5-91D25BYoEIEzKuLl7CnIBHcdfu2G86v9u8MWMJSho'}],
     colorMode: {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'My Site',
+      title: 'Onec Gradle Plugin',
+      logo: {
+        alt: '',
+        src: 'img/logo.svg',
+      },
       items: [
         {
-          href: 'https://github.com/facebook/docusaurus',
-          label: 'GitHub',
+          type: 'docSidebar',
+          sidebarId: 'docs',
+          label: 'Docs',
+          position: 'left',
+        },
+        {
+          type: 'docsVersionDropdown',
           position: 'right',
+          dropdownItemsAfter: [
+            {
+              type: 'html',
+              value: '<hr style="margin: 0.3rem 0;">',
+            },
+            {
+              href: `${repositoryUrl}/releases`,
+              label: 'GitHub Releases',
+            },
+          ],
+        },
+        {
+          type: 'localeDropdown',
+          position: 'right',        },
+        {
+          href: repositoryUrl,
+          position: 'right',
+          className: 'header-github-link',
+          'aria-label': 'GitHub',
         },
       ],
     },
@@ -72,20 +111,24 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'More',
-          items: [
-            {
-              label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
-            },
-          ],
+          label: 'GitHub',
+          href: repositoryUrl,
+        },
+        {
+          label: 'Contributing',
+          href: `${repositoryUrl}/blob/main/CONTRIBUTING.md`,
+        },
+        {
+          label: 'Gradle Plugin Portal',
+          href: 'https://plugins.gradle.org/plugin/io.github.onec-devops.onec',
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: 'Distributed under the Apache License 2.0.',
     },
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
+      additionalLanguages: ['groovy', 'powershell', 'properties'],
     },
   } satisfies Preset.ThemeConfig,
 };

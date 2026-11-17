@@ -1,0 +1,61 @@
+---
+description: "Задачи Gradle-плагина для 1С и их поведение."
+---
+
+# Задачи
+
+Плагин добавляет в проект следующие задачи.
+
+## `onecBuild` {/* #onecbuild */}
+
+**Тип:** `io.github.onecdevops.OnecBuildTask`\
+**Зависит от:** `onecCreateInfobase`
+
+Собирает файл проекта в каталог `build/onec`.
+
+- Входы: файлы `srcDir` и полная версия используемой платформы, а для проекта 1С:EDT - ещё и
+  версия 1С:EDT. Если поставить другую сборку платформы, под которую подходит `platformVersion`,
+  файл собирается заново.
+- Выход: файл `.cf`, `.cfe`, `.epf` или `.erf`, тип которого определяется по исходному коду.
+- Пропускается как `NO-SOURCE`, если `srcDir` пуст или его нет.
+- Кэшируется в кэше сборки.
+- Собирает в копии базы из `onecCreateInfobase`, поэтому сама база остаётся пустой.
+
+## `onecCreateInfobase` {/* #oneccreateinfobase */}
+
+**Тип:** `io.github.onecdevops.OnecCreateInfobaseTask`
+
+Создаёт пустую информационную базу `build/onec/infobase`, в которой собирает `onecBuild`.
+
+Выполняется один раз и дальше остаётся `UP-TO-DATE` до `clean` или до перехода на другую сборку
+платформы. Группы у неё нет, поэтому `./gradlew tasks` показывает её только с `--all`.
+
+## `onecInstallations` {/* #onecinstallations */}
+
+**Тип:** `io.github.onecdevops.OnecInstallationsTask`
+
+Показывает найденные установки платформы и 1С:EDT и отмечает те, на которых пойдёт сборка.
+Выполняется каждый раз, потому что установки на машине могут меняться:
+
+```text
+1C:Enterprise platform, requested: 8.3.25
+
+* 8.3.25.1633   C:\Program Files\1cv8\8.3.25.1633   standard location
+  8.3.27.2342   C:\Program Files\1cv8\8.3.27.2342   standard location
+
+1C:EDT, requested: 2026.2
+
+* 2026.2.2   C:\Users\me\AppData\Local\1C\1cedtstart\installations\1C_EDT 2026.2\1cedt   standard location
+```
+
+## Задачи жизненного цикла {/* #lifecycle-tasks */}
+
+Плагин применяет плагин Gradle `base` и подключает свои задачи к его задачам жизненного цикла.
+
+- `assemble`\
+  **Зависит от:** `onecBuild`\
+  Собирает файл проекта. Добавлена плагином `base`.
+
+- `build`\
+  **Зависит от:** `assemble`, `check`\
+  Собирает и проверяет проект. Добавлена плагином `base`.

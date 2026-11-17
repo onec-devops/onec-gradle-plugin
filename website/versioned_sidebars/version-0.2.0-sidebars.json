@@ -1,0 +1,51 @@
+{
+  "docs": [
+    "intro",
+    {
+      "type": "category",
+      "label": "Getting Started",
+      "link": {
+        "type": "generated-index",
+        "slug": "/getting-started",
+        "description": "Prepare the source code, apply the plugin, and set up the build of your 1C:Enterprise projects."
+      },
+      "collapsed": false,
+      "items": [
+        "getting-started/preparing-sources",
+        "getting-started/first-build"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Guides",
+      "link": {
+        "type": "generated-index",
+        "slug": "/guides",
+        "description": "Learn how to speed up the build, run it in CI, and handle other tasks once the plugin is applied."
+      },
+      "collapsed": false,
+      "items": [
+        "guides/multi-project-builds",
+        "guides/performance",
+        "guides/building-in-ci"
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Reference",
+      "link": {
+        "type": "generated-index",
+        "slug": "/reference",
+        "description": "Look up the settings and tasks of the plugin."
+      },
+      "collapsed": false,
+      "items": [
+        "reference/extension",
+        "reference/tasks",
+        "reference/gradle-properties"
+      ]
+    },
+    "troubleshooting",
+    "upgrading"
+  ]
+}
