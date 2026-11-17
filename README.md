@@ -10,7 +10,7 @@ data processors and reports from XML dumps and 1C:EDT projects.
 
 ## Requirements
 
-- Gradle 9.0 or newer.
+- Gradle 9.1 or newer.
 - Java 17 or newer.
 - The 1C:Enterprise platform with `ibcmd`.
 - 1C:EDT, only to build 1C:EDT projects.
@@ -19,7 +19,7 @@ data processors and reports from XML dumps and 1C:EDT projects.
 
 The steps below create a project that builds a configuration.
 
-1. [Install Gradle](https://gradle.org/install/) 9.0 or newer.
+1. [Install Gradle](https://gradle.org/install/) 9.1 or newer.
 
 2. Create an empty directory for the project, for example `my-project`, and run in it:
 

@@ -66,7 +66,7 @@ class OnecPlugin: Plugin<Project> {
     }
 
     companion object {
-        const val MINIMUM_GRADLE_VERSION = "9.0.0"
+        const val MINIMUM_GRADLE_VERSION = "9.1.0"
     }
 }
 
