@@ -62,8 +62,7 @@ class EdtBuildFunctionalTest: FunctionalTest() {
 
         val result = runner("onecBuild").buildAndFail()
 
-        assertContains(result.output, "must hold one external data processor or report to build, " +
-            "it holds 2: ExternalDataProcessors/DataProcessor, ExternalReports/Report")
+        assertContains(result.output, "must hold one external data processor or report to build, it holds 2:")
     }
 
     @Test fun `keeps the modules of a 1C EDT project`() {

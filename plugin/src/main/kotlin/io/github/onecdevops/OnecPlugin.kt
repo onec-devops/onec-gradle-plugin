@@ -73,6 +73,7 @@ class OnecPlugin: Plugin<Project> {
 internal fun requireSupportedGradle(current: GradleVersion) {
     if (current.baseVersion < GradleVersion.version(OnecPlugin.MINIMUM_GRADLE_VERSION)) {
         throw GradleException("The onec plugin requires Gradle ${OnecPlugin.MINIMUM_GRADLE_VERSION} or newer, " +
-            "this was ${current.version}")
+            "this was ${current.version}.\nUpgrade the Gradle Wrapper: " +
+            "gradlew wrapper --gradle-version ${OnecPlugin.MINIMUM_GRADLE_VERSION}")
     }
 }

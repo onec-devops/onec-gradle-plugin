@@ -1,6 +1,7 @@
 package io.github.onecdevops
 
 import org.gradle.api.GradleException
+import org.gradle.api.InvalidUserDataException
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileTree
 import org.gradle.api.provider.Property
@@ -101,7 +102,8 @@ abstract class OnecBuildTask: IbcmdTask(), UsesEdt {
 
     /** Converts the 1C:EDT project to an XML dump in [target], which ibcmd can load. */
     private fun exportEdtProject(target: File): File {
-        val requested = edtVersion.orNull ?: throw GradleException("onec.edtVersion is not set")
+        val requested = edtVersion.orNull ?: throw InvalidUserDataException("'onec.edtVersion' is not set.\n" +
+            "Set the 1C:EDT version in the onec block, for example: onec { edtVersion = \"2026.2\" }")
         val edt = findEdt() ?: throw installationNotFound("1C:EDT $requested with 1cedtcli",
             edtInstallationLocations(windowsProgramDirs.get()), UsesEdt.INSTALLATION_PATHS_PROPERTY,
             UsesEdt.INSTALLATION_VARIABLES_PROPERTY, UsesEdt.DEFAULT_INSTALLATION_VARIABLE)
@@ -167,9 +169,8 @@ abstract class OnecBuildTask: IbcmdTask(), UsesEdt {
         val objects = EDT_EXTERNAL_OBJECT_KINDS.keys.flatMap { kind ->
             srcDir.dir("src/$kind").get().asFile.listFiles { file -> file.isDirectory }.orEmpty().sorted()
         }
-        return objects.singleOrNull() ?: throw GradleException("The 1C:EDT project ${srcDir.get().asFile} " +
-            "must hold one external data processor or report to build, it holds ${objects.size}" +
-            objects.joinToString(prefix = if (objects.isEmpty()) "" else ": ") { "${it.parentFile.name}/${it.name}" })
+        return objects.singleOrNull()
+            ?: throw edtExternalObjectsNotOne(srcDir.get().asFile, objects.map { "${it.parentFile.name}/${it.name}" })
     }
 
     /** `<Name>.xml` describing an external data processor or report next to the `<Name>` directory, without Configuration.xml. */
@@ -213,3 +214,9 @@ abstract class OnecBuildTask: IbcmdTask(), UsesEdt {
 
 /** Directories of the external objects in `src` of a 1C:EDT project, and in its export, with the files they build to. */
 private val EDT_EXTERNAL_OBJECT_KINDS = mapOf("ExternalDataProcessors" to "epf", "ExternalReports" to "erf")
+
+/** The error for a 1C:EDT project of external objects that does not hold exactly one, listing the [objects] it holds. */
+internal fun edtExternalObjectsNotOne(project: File, objects: List<String>) = InvalidUserDataException(
+    "The 1C:EDT project '$project' must hold one external data processor or report to build, it holds ${objects.size}" +
+        (if (objects.isEmpty()) "." else ":" + objects.joinToString("") { "\n* $it" }) +
+        "\nPut each external data processor or report in a 1C:EDT project of its own.")
