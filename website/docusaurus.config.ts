@@ -3,17 +3,49 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const repositoryUrl = 'https://github.com/onec-devops/onec-gradle-plugin';
+const baseUrl = '/onec-gradle-plugin/';
+
+// Docusaurus loads the config once per locale and names it in this variable, as its own site does
+// for localized config values. The organization site has the same locales.
+const defaultLocale = 'en';
+const currentLocale = process.env.DOCUSAURUS_CURRENT_LOCALE ?? defaultLocale;
+const organizationUrl = `https://onec-devops.github.io/${
+  currentLocale === defaultLocale ? '' : `${currentLocale}/`
+}`;
 const config: Config = {
   title: 'Onec Gradle Plugin',
   tagline: 'Gradle support for 1C:Enterprise development',
-  favicon: 'img/favicon.png',
+  headTags: [
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/svg+xml',
+        sizes: 'any',
+        href: `${baseUrl}img/favicon.svg`,
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '96x96',
+        href: `${baseUrl}img/favicon_96x96.png`,
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {rel: 'apple-touch-icon', sizes: '180x180', href: `${baseUrl}apple-touch-icon.png`},
+    },
+  ],
 
   future: {
     v4: true,
   },
 
   url: 'https://onec-devops.github.io',
-  baseUrl: '/onec-gradle-plugin/',
+  baseUrl,
   organizationName: 'onec-devops',
   projectName: 'onec-gradle-plugin',
   trailingSlash: false,
@@ -27,7 +59,7 @@ const config: Config = {
   },
 
   i18n: {
-    defaultLocale: 'en',
+    defaultLocale,
     locales: ['en', 'ru'],
   },
 
@@ -110,6 +142,11 @@ const config: Config = {
     footer: {
       style: 'dark',
       links: [
+        {
+          label: 'Onec DevOps',
+          href: organizationUrl,
+          target: '_self',
+        },
         {
           label: 'GitHub',
           href: repositoryUrl,

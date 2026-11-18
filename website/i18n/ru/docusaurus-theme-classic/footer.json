@@ -14,5 +14,9 @@
   "copyright": {
     "message": "Распространяется по лицензии Apache License 2.0.",
     "description": "The footer copyright"
+  },
+  "link.item.label.Onec DevOps": {
+    "message": "Onec DevOps",
+    "description": "The label of footer link with label=Onec DevOps linking to https://onec-devops.github.io/"
   }
 }
