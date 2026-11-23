@@ -8,7 +8,7 @@ import org.gradle.work.DisableCachingByDefault
 
 /** A task that needs to find the installed platform. */
 @DisableCachingByDefault(because = "Abstract super-class, not to be instantiated directly")
-abstract class PlatformTask: DefaultTask() {
+abstract class PlatformTask : DefaultTask() {
     /** Full platform version or its leading part, e.g. `8.3.25`. */
     @get:Internal
     abstract val platformVersion: Property<String>
@@ -25,8 +25,10 @@ abstract class PlatformTask: DefaultTask() {
     abstract val windowsProgramDirs: ListProperty<String>
 
     internal fun installationLocations(): List<InstallationLocation> =
-        locationsFrom(installationPaths.get(), INSTALLATION_PATHS_PROPERTY, installationVariables.get(),
-            PlatformInstallations.standardLocations(windowsProgramDirs.get()))
+        locationsFrom(
+            installationPaths.get(), INSTALLATION_PATHS_PROPERTY, installationVariables.get(),
+            PlatformInstallations.standardLocations(windowsProgramDirs.get())
+        )
 
     companion object {
         const val INSTALLATION_PATHS_PROPERTY = "onec.platform.installations.paths"

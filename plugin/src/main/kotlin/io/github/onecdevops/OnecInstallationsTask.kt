@@ -5,13 +5,17 @@ import org.gradle.api.tasks.UntrackedTask
 
 /** Prints the platform and 1C:EDT installations the plugin finds and marks the ones it uses. */
 @UntrackedTask(because = "Reports what is installed on the machine")
-abstract class OnecInstallationsTask: PlatformTask(), UsesEdt {
+abstract class OnecInstallationsTask : PlatformTask(), UsesEdt {
     @TaskAction
     fun list() {
-        val platform = report("1C:Enterprise platform", "onec.platformVersion", platformVersion.orNull,
-            PlatformInstallations, installationLocations())
-        val edt = report("1C:EDT", "onec.edtVersion", edtVersion.orNull,
-            EdtInstallations, edtInstallationLocations(windowsProgramDirs.get()))
+        val platform = report(
+            "1C:Enterprise platform", "onec.platformVersion", platformVersion.orNull,
+            PlatformInstallations, installationLocations()
+        )
+        val edt = report(
+            "1C:EDT", "onec.edtVersion", edtVersion.orNull,
+            EdtInstallations, edtInstallationLocations(windowsProgramDirs.get())
+        )
         logger.lifecycle((platform + "" + edt).joinToString("\n"))
     }
 
