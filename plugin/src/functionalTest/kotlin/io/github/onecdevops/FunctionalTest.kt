@@ -18,9 +18,11 @@ abstract class FunctionalTest {
     protected val buildFile by lazy { projectDir.resolve("build.gradle") }
     protected val settingsFile by lazy { projectDir.resolve("settings.gradle") }
 
-    @BeforeTest fun createProject() {
+    @BeforeTest
+    fun createProject() {
         settingsFile.writeText("rootProject.name = 'sample'")
-        buildFile.writeText("""
+        buildFile.writeText(
+            """
             plugins {
                 id('io.github.onec-devops.onec')
             }
@@ -28,7 +30,8 @@ abstract class FunctionalTest {
             onec {
                 platformVersion = '$PLATFORM_VERSION'
             }
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 
     protected fun runner(vararg arguments: String): GradleRunner {
@@ -42,12 +45,23 @@ abstract class FunctionalTest {
     }
 
     protected fun copySources(resource: String, target: String) {
-        File(javaClass.getResource("/$resource")!!.toURI()).copyRecursively(projectDir.resolve(target))
+        sourceFixture(resource).copyRecursively(projectDir.resolve(target))
+    }
+
+    protected fun sourceFixture(name: String): File {
+        val resource = checkNotNull(javaClass.getResource("/$name")) {
+            "Missing test resource: /$name"
+        }
+        return File(resource.toURI())
     }
 
     /** Home of the platform installation that onecInstallations marks. */
-    protected fun selectedPlatformHome(): String =
-        selectedPlatform.find(runner("onecInstallations").build().output)!!.groups["home"]!!.value
+    protected fun selectedPlatformHome(): String {
+        val installations = runner("onecInstallations").build().output
+        return checkNotNull(selectedPlatform.find(installations)?.groups?.get("home")?.value) {
+            "onecInstallations did not report the selected platform installation path:\n$installations"
+        }
+    }
 
     /** Loads the configuration [file] into a new infobase and exports it to XML, to see what was built. */
     protected fun exportToXml(file: File): File {
@@ -58,7 +72,8 @@ abstract class FunctionalTest {
         for (args in listOf(
             arrayOf("infobase", "create", *infobase),
             arrayOf("infobase", "config", "load", *infobase, file.path),
-            arrayOf("infobase", "config", "export", *infobase, work.resolve("xml").path))) {
+            arrayOf("infobase", "config", "export", *infobase, work.resolve("xml").path)
+        )) {
             val process = ProcessBuilder(ibcmd.path, *args).redirectErrorStream(true).start()
             val output = process.inputStream.readBytes().decodeToString()
             check(process.waitFor() == 0) { "ibcmd ${args.take(3).joinToString(" ")} failed:\n$output" }
@@ -80,6 +95,7 @@ abstract class FunctionalTest {
         /** The line of onecInstallations marking the installation of [requested]: its version, home and the setting it comes from. */
         private fun selectedInstallation(requested: String) = Regex(
             """^\* (?<version>${Regex.escape(requested)}(?:\.\S+)?) {3,}(?<home>\S.*?) {3,}(?<source>\S.*)$""",
-            RegexOption.MULTILINE)
+            RegexOption.MULTILINE
+        )
     }
 }

@@ -11,7 +11,7 @@ import java.io.File
  * and work on their own copies, so they cannot lock each other.
  */
 @DisableCachingByDefault(because = "Not worth caching")
-abstract class OnecCreateInfobaseTask: IbcmdTask() {
+abstract class OnecCreateInfobaseTask : IbcmdTask() {
     @get:OutputDirectory
     abstract val infobaseDir: DirectoryProperty
 

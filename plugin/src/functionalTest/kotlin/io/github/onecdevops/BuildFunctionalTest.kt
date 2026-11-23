@@ -7,9 +7,10 @@ import kotlin.test.assertTrue
 import kotlin.test.Test
 import org.gradle.testkit.runner.TaskOutcome
 
-class BuildFunctionalTest: FunctionalTest() {
+class BuildFunctionalTest : FunctionalTest() {
 
-    @Test fun `builds a cf file from a configuration`() {
+    @Test
+    fun `builds a cf file from a configuration`() {
         copySources("configuration", "src")
 
         runner("assemble").build()
@@ -18,7 +19,8 @@ class BuildFunctionalTest: FunctionalTest() {
         assertFalse(projectDir.resolve("build/onec/sample.cfe").exists())
     }
 
-    @Test fun `builds a cfe file from an extension`() {
+    @Test
+    fun `builds a cfe file from an extension`() {
         copySources("extension", "src")
 
         runner("assemble").build()
@@ -27,7 +29,8 @@ class BuildFunctionalTest: FunctionalTest() {
         assertFalse(projectDir.resolve("build/onec/sample.cf").exists())
     }
 
-    @Test fun `builds an epf file from an external data processor`() {
+    @Test
+    fun `builds an epf file from an external data processor`() {
         copySources("data-processor", "src")
 
         runner("assemble").build()
@@ -36,7 +39,8 @@ class BuildFunctionalTest: FunctionalTest() {
         assertFalse(projectDir.resolve("build/onec/sample.cf").exists())
     }
 
-    @Test fun `builds an erf file from an external report`() {
+    @Test
+    fun `builds an erf file from an external report`() {
         copySources("report", "src")
 
         runner("assemble").build()
@@ -45,7 +49,8 @@ class BuildFunctionalTest: FunctionalTest() {
         assertFalse(projectDir.resolve("build/onec/sample.cf").exists())
     }
 
-    @Test fun `builds from another source directory`() {
+    @Test
+    fun `builds from another source directory`() {
         copySources("configuration", "cf")
         buildFile.appendText("\nonec.srcDir = file('cf')")
 
@@ -54,7 +59,8 @@ class BuildFunctionalTest: FunctionalTest() {
         assertTrue(projectDir.resolve("build/onec/sample.cf").length() > 0)
     }
 
-    @Test fun `names the file after the archives name`() {
+    @Test
+    fun `names the file after the archives name`() {
         copySources("configuration", "src")
         buildFile.appendText("\nbase.archivesName = 'accounting'")
 
@@ -64,7 +70,8 @@ class BuildFunctionalTest: FunctionalTest() {
         assertFalse(projectDir.resolve("build/onec/sample.cf").exists())
     }
 
-    @Test fun `does not rebuild unchanged sources`() {
+    @Test
+    fun `does not rebuild unchanged sources`() {
         copySources("configuration", "src")
         runner("onecBuild").build()
 
@@ -73,17 +80,21 @@ class BuildFunctionalTest: FunctionalTest() {
         assertEquals(TaskOutcome.UP_TO_DATE, result.task(":onecBuild")?.outcome)
     }
 
-    @Test fun `skips the build without sources`() {
+    @Test
+    fun `skips the build without sources`() {
         val result = runner("assemble").build()
 
         assertEquals(TaskOutcome.NO_SOURCE, result.task(":onecBuild")?.outcome)
     }
 
-    @Test fun `fails with the ibcmd output when the sources are invalid`() {
+    @Test
+    fun `fails with the ibcmd output when the sources are invalid`() {
         projectDir.resolve("src").mkdirs()
-        projectDir.resolve("src/Configuration.xml").writeText("""
+        projectDir.resolve("src/Configuration.xml").writeText(
+            """
             <MetaDataObject><Configuration><Properties><Name>Broken</Name></Properties></Configuration></MetaDataObject>
-        """.trimIndent())
+        """.trimIndent()
+        )
 
         val result = runner("onecBuild").buildAndFail()
 
@@ -91,7 +102,8 @@ class BuildFunctionalTest: FunctionalTest() {
         assertContains(result.output, "Configuration.xml")
     }
 
-    @Test fun `leaves no temporary files after a build`() {
+    @Test
+    fun `leaves no temporary files after a build`() {
         copySources("configuration", "src")
 
         runner("onecBuild").build()
@@ -99,7 +111,8 @@ class BuildFunctionalTest: FunctionalTest() {
         assertEquals(emptyList(), projectDir.resolve("build/tmp").walk().filter { it.isFile }.toList())
     }
 
-    @Test fun `takes the result from the build cache after a clean`() {
+    @Test
+    fun `takes the result from the build cache after a clean`() {
         copySources("configuration", "src")
         settingsFile.appendText("\nbuildCache { local { directory = file('build-cache') } }")
         runner("onecBuild", "--build-cache").build()
@@ -110,7 +123,8 @@ class BuildFunctionalTest: FunctionalTest() {
         assertEquals(TaskOutcome.FROM_CACHE, result.task(":onecBuild")?.outcome)
     }
 
-    @Test fun `reuses the configuration cache when the sources change`() {
+    @Test
+    fun `reuses the configuration cache when the sources change`() {
         copySources("configuration", "src")
         runner("onecBuild", "--configuration-cache").build()
         projectDir.resolve("src/Configuration.xml").appendText("<!-- changed -->")
@@ -120,12 +134,14 @@ class BuildFunctionalTest: FunctionalTest() {
         assertContains(result.output, "Reusing configuration cache.")
     }
 
-    @Test fun `configures the projects of a multi-project build with isolated projects`() {
+    @Test
+    fun `configures the projects of a multi-project build with isolated projects`() {
         buildFile.delete()
         settingsFile.appendText("\ninclude('configuration', 'extension')")
         for (project in listOf("configuration", "extension")) {
             projectDir.resolve(project).mkdirs()
-            projectDir.resolve("$project/build.gradle").writeText("""
+            projectDir.resolve("$project/build.gradle").writeText(
+                """
                 plugins {
                     id('io.github.onec-devops.onec')
                 }
@@ -133,7 +149,8 @@ class BuildFunctionalTest: FunctionalTest() {
                 onec {
                     platformVersion = '$PLATFORM_VERSION'
                 }
-            """.trimIndent())
+            """.trimIndent()
+            )
         }
 
         // Isolated Projects checks the configuration, so the tasks need not run.

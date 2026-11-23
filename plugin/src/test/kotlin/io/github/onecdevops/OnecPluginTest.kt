@@ -31,19 +31,23 @@ class OnecPluginTest {
         assertDoesNotThrow { requireSupportedGradle(current) }
     }
 
-    @Test fun `accepts a release candidate of the minimum version`() {
+    @Test
+    fun `accepts a release candidate of the minimum version`() {
         val current = GradleVersion.version("${OnecPlugin.MINIMUM_GRADLE_VERSION}-rc-1")
 
         assertDoesNotThrow { requireSupportedGradle(current) }
     }
 
-    @Test fun `rejects Gradle older than the minimum version`() {
+    @Test
+    fun `rejects Gradle older than the minimum version`() {
         val current = GradleVersion.version("8.14.3")
 
         val failure = assertFailsWith<GradleException> { requireSupportedGradle(current) }
 
-        assertEquals("The onec plugin requires Gradle ${OnecPlugin.MINIMUM_GRADLE_VERSION} or newer, this was 8.14.3.\n" +
-            "Upgrade the Gradle Wrapper: gradlew wrapper --gradle-version ${OnecPlugin.MINIMUM_GRADLE_VERSION}",
-            failure.message)
+        assertEquals(
+            "The onec plugin requires Gradle ${OnecPlugin.MINIMUM_GRADLE_VERSION} or newer, this was 8.14.3.\n" +
+                "Upgrade the Gradle Wrapper: gradlew wrapper --gradle-version ${OnecPlugin.MINIMUM_GRADLE_VERSION}",
+            failure.message
+        )
     }
 }

@@ -20,7 +20,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 
 /** Builds a .cf, .cfe, .epf or .erf file from an XML dump or a 1C:EDT project. */
 @CacheableTask
-abstract class OnecBuildTask: IbcmdTask(), UsesEdt {
+abstract class OnecBuildTask : IbcmdTask(), UsesEdt {
     @get:Internal
     abstract val srcDir: DirectoryProperty
 
@@ -79,7 +79,8 @@ abstract class OnecBuildTask: IbcmdTask(), UsesEdt {
                 it.from(infobaseDir)
                 it.into(infobaseCopy)
             }
-            val infobase = listOfNotNull("--data=$dataDir", "--db-path=$infobaseCopy", extensionName?.let { "--extension=$it" })
+            val infobase =
+                listOfNotNull("--data=$dataDir", "--db-path=$infobaseCopy", extensionName?.let { "--extension=$it" })
             if (external) {
                 // An external data processor or report is not a part of the infobase, so it is built
                 // straight to the file; the kind of the file follows the XML.
@@ -102,11 +103,15 @@ abstract class OnecBuildTask: IbcmdTask(), UsesEdt {
 
     /** Converts the 1C:EDT project to an XML dump in [target], which ibcmd can load. */
     private fun exportEdtProject(target: File): File {
-        val requested = edtVersion.orNull ?: throw InvalidUserDataException("'onec.edtVersion' is not set.\n" +
-            "Set the 1C:EDT version in the onec block, for example: onec { edtVersion = \"2026.2\" }")
-        val edt = findEdt() ?: throw installationNotFound("1C:EDT $requested with 1cedtcli",
+        val requested = edtVersion.orNull ?: throw InvalidUserDataException(
+            "'onec.edtVersion' is not set.\n" +
+                "Set the 1C:EDT version in the onec block, for example: onec { edtVersion = \"2026.2\" }"
+        )
+        val edt = findEdt() ?: throw installationNotFound(
+            "1C:EDT $requested with 1cedtcli",
             edtInstallationLocations(windowsProgramDirs.get()), UsesEdt.INSTALLATION_PATHS_PROPERTY,
-            UsesEdt.INSTALLATION_VARIABLES_PROPERTY, UsesEdt.DEFAULT_INSTALLATION_VARIABLE)
+            UsesEdt.INSTALLATION_VARIABLES_PROPERTY, UsesEdt.DEFAULT_INSTALLATION_VARIABLE
+        )
         // A workspace of its own, as 1C:EDT locks it, and a new one each time, as it remembers the projects.
         val workspace = File(temporaryDir, "workspace")
         val script = File(temporaryDir, "export.txt")
@@ -116,14 +121,27 @@ abstract class OnecBuildTask: IbcmdTask(), UsesEdt {
         // The script runs both in one 1C:EDT start, which takes most of a minute. Its shell takes
         // backslashes for escapes, hence the forward slashes.
         val project = srcDir.get().asFile
-        script.writeText("""
+        script.writeText(
+            """
             import --project "${project.invariantSeparatorsPath}"
-            export --project-name "${edtProjectName(File(project, ".project"))}" --configuration-files "${target.invariantSeparatorsPath}"
-        """.trimIndent())
+            export --project-name "${
+                edtProjectName(
+                    File(
+                        project,
+                        ".project"
+                    )
+                )
+            }" --configuration-files "${target.invariantSeparatorsPath}"
+        """.trimIndent()
+        )
         try {
             // 1cedtcli writes in the OEM code page of the console unless told otherwise.
-            val output = run(edt.executable, "1cedtcli export", listOf("-data", workspace.path,
-                "-vmargs", "-Dfile.encoding=UTF-8", "-file", script.path))
+            val output = run(
+                edt.executable, "1cedtcli export", listOf(
+                    "-data", workspace.path,
+                    "-vmargs", "-Dfile.encoding=UTF-8", "-file", script.path
+                )
+            )
             // On Linux 1cedtcli exits with 0 when a command of the script fails, so the result is told by the files.
             if (target.list().isNullOrEmpty()) {
                 throw GradleException("1cedtcli export exported nothing:\n$output")
@@ -145,7 +163,12 @@ abstract class OnecBuildTask: IbcmdTask(), UsesEdt {
     }
 
     private fun findEdt(): Installation? = edtVersion.orNull
-        ?.let { EdtInstallations.select(it, EdtInstallations.discover(edtInstallationLocations(windowsProgramDirs.get()))) }
+        ?.let {
+            EdtInstallations.select(
+                it,
+                EdtInstallations.discover(edtInstallationLocations(windowsProgramDirs.get()))
+            )
+        }
 
     private fun configurationXml(): File = srcDir.file("Configuration.xml").get().asFile
 
@@ -219,4 +242,5 @@ private val EDT_EXTERNAL_OBJECT_KINDS = mapOf("ExternalDataProcessors" to "epf",
 internal fun edtExternalObjectsNotOne(project: File, objects: List<String>) = InvalidUserDataException(
     "The 1C:EDT project '$project' must hold one external data processor or report to build, it holds ${objects.size}" +
         (if (objects.isEmpty()) "." else ":" + objects.joinToString("") { "\n* $it" }) +
-        "\nPut each external data processor or report in a 1C:EDT project of its own.")
+        "\nPut each external data processor or report in a 1C:EDT project of its own."
+)

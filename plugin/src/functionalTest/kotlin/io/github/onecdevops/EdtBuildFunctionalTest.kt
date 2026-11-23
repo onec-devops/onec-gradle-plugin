@@ -14,13 +14,15 @@ import kotlin.test.Test
  * Builds of 1C:EDT projects; they call the real 1cedtcli, which a machine without 1C:EDT Start finds through EDT_HOME.
  * The projects are made from the XML fixtures for the version of the platform in use, see [copyEdtProject].
  */
-class EdtBuildFunctionalTest: FunctionalTest() {
+class EdtBuildFunctionalTest : FunctionalTest() {
 
-    @BeforeTest fun requestEdt() {
+    @BeforeTest
+    fun requestEdt() {
         buildFile.appendText("\nonec.edtVersion = '$EDT_VERSION'")
     }
 
-    @Test fun `builds a cf file from a 1C EDT configuration project`() {
+    @Test
+    fun `builds a cf file from a 1C EDT configuration project`() {
         copyEdtProject("configuration", "src")
 
         runner("assemble").build()
@@ -29,7 +31,8 @@ class EdtBuildFunctionalTest: FunctionalTest() {
         assertFalse(projectDir.resolve("build/onec/sample.cfe").exists())
     }
 
-    @Test fun `builds a cfe file from a 1C EDT extension project`() {
+    @Test
+    fun `builds a cfe file from a 1C EDT extension project`() {
         copyEdtProject("extension", "src")
 
         runner("assemble").build()
@@ -38,7 +41,8 @@ class EdtBuildFunctionalTest: FunctionalTest() {
         assertFalse(projectDir.resolve("build/onec/sample.cf").exists())
     }
 
-    @Test fun `builds an epf file from a 1C EDT project of an external data processor`() {
+    @Test
+    fun `builds an epf file from a 1C EDT project of an external data processor`() {
         copyEdtProject("data-processor", "src")
 
         runner("assemble").build()
@@ -47,7 +51,8 @@ class EdtBuildFunctionalTest: FunctionalTest() {
         assertFalse(projectDir.resolve("build/onec/sample.cf").exists())
     }
 
-    @Test fun `builds an erf file from a 1C EDT project of an external report`() {
+    @Test
+    fun `builds an erf file from a 1C EDT project of an external report`() {
         copyEdtProject("report", "src")
 
         runner("assemble").build()
@@ -56,7 +61,8 @@ class EdtBuildFunctionalTest: FunctionalTest() {
         assertFalse(projectDir.resolve("build/onec/sample.cf").exists())
     }
 
-    @Test fun `fails when a 1C EDT project of external objects holds more than one`() {
+    @Test
+    fun `fails when a 1C EDT project of external objects holds more than one`() {
         copyEdtProject("data-processor", "src")
         copyEdtProject("report/src/ExternalReports", "src/src/ExternalReports")
 
@@ -65,7 +71,8 @@ class EdtBuildFunctionalTest: FunctionalTest() {
         assertContains(result.output, "must hold one external data processor or report to build, it holds 2:")
     }
 
-    @Test fun `keeps the modules of a 1C EDT project`() {
+    @Test
+    fun `keeps the modules of a 1C EDT project`() {
         copyEdtProject("configuration", "src")
 
         runner("onecBuild").build()
@@ -74,7 +81,8 @@ class EdtBuildFunctionalTest: FunctionalTest() {
         assertContains(module.readText(), "Message(\"Hello\");")
     }
 
-    @Test fun `leaves no temporary files after a build of a 1C EDT project`() {
+    @Test
+    fun `leaves no temporary files after a build of a 1C EDT project`() {
         copyEdtProject("configuration", "src")
 
         runner("onecBuild").build()
@@ -83,7 +91,8 @@ class EdtBuildFunctionalTest: FunctionalTest() {
     }
 
     // Not a broken Configuration.mdo: 1C:EDT waits 25 minutes for such a project to start before it gives up.
-    @Test fun `fails with the 1cedtcli output when the project cannot be exported`() {
+    @Test
+    fun `fails with the 1cedtcli output when the project cannot be exported`() {
         copyEdtProject("configuration", "src")
         val description = projectDir.resolve("src/.project")
         description.writeText(description.readText().replace("<name>configuration</name>", "<name>bad/name</name>"))
@@ -108,23 +117,37 @@ class EdtBuildFunctionalTest: FunctionalTest() {
      */
     private fun makeEdtProjects(): File {
         val installations = runner("onecInstallations").build().output
+        val installedVersion = checkNotNull(
+            selectedPlatform.find(installations)?.groups?.get("version")?.value
+        ) {
+            "onecInstallations did not report the selected platform version:\n$installations"
+        }
         // 1C:EDT takes the version of the platform without the build, e.g. 8.3.25.
-        val platformVersion = selectedPlatform.find(installations)!!.groups["version"]!!.value.split('.').take(3).joinToString(".")
-        val edtHome = File(selectedEdt.find(installations)!!.groups["home"]!!.value)
-        val edtcli = listOf("1cedtcli.exe", "1cedtcli").map { edtHome.resolve(it) }.first { it.isFile }
+        val platformVersion = installedVersion.split('.').take(3).joinToString(".")
+
+        val edtHome = checkNotNull(
+            selectedEdt.find(installations)?.groups?.get("home")?.value
+        ) {
+            "onecInstallations did not report the selected 1C:EDT installation path:\n$installations"
+        }
+        val edtcli = listOf("1cedtcli.exe", "1cedtcli")
+            .map { File(edtHome, it) }
+            .first { it.isFile }
 
         val dir = Files.createTempDirectory("edt-projects").toFile()
         Runtime.getRuntime().addShutdownHook(Thread { dir.deleteRecursively() })
         val projects = listOf("configuration", "extension", "data-processor", "report")
         val script = dir.resolve("import.txt")
         script.writeText(projects.joinToString("\n") { name ->
-            val xml = File(javaClass.getResource("/$name")!!.toURI()).invariantSeparatorsPath
+            val xml = sourceFixture(name).invariantSeparatorsPath
             val base = if (name == "extension") " --base-project-name configuration" else ""
             "import --version $platformVersion$base --configuration-files \"$xml\" " +
                 "--project \"${dir.resolve(name).invariantSeparatorsPath}\""
         })
-        val process = ProcessBuilder(edtcli.path, "-data", dir.resolve("workspace").path,
-            "-vmargs", "-Dfile.encoding=UTF-8", "-file", script.path)
+        val process = ProcessBuilder(
+            edtcli.path, "-data", dir.resolve("workspace").path,
+            "-vmargs", "-Dfile.encoding=UTF-8", "-file", script.path
+        )
             .redirectErrorStream(true).redirectOutput(dir.resolve("import.log")).start()
         if (!process.waitFor(10, TimeUnit.MINUTES)) {
             process.destroyForcibly()

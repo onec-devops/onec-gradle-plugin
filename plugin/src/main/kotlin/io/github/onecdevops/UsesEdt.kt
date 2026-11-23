@@ -6,7 +6,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Internal
 
 /** A task that needs to find the installed 1C:EDT. */
-interface UsesEdt: Task {
+interface UsesEdt : Task {
     /** Full 1C:EDT version or its leading part, e.g. `2026.2`. */
     @get:Internal
     val edtVersion: Property<String>
@@ -30,5 +30,7 @@ interface UsesEdt: Task {
 }
 
 internal fun UsesEdt.edtInstallationLocations(windowsProgramDirs: List<String>): List<InstallationLocation> =
-    locationsFrom(edtInstallationPaths.get(), UsesEdt.INSTALLATION_PATHS_PROPERTY, edtInstallationVariables.get(),
-        EdtInstallations.standardLocations(localAppData.get(), windowsProgramDirs))
+    locationsFrom(
+        edtInstallationPaths.get(), UsesEdt.INSTALLATION_PATHS_PROPERTY, edtInstallationVariables.get(),
+        EdtInstallations.standardLocations(localAppData.get(), windowsProgramDirs)
+    )

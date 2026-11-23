@@ -6,7 +6,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.plugins.BasePluginExtension
 import org.gradle.util.GradleVersion
 
-class OnecPlugin: Plugin<Project> {
+class OnecPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         requireSupportedGradle(GradleVersion.current())
         project.pluginManager.apply("base")
@@ -29,7 +29,9 @@ class OnecPlugin: Plugin<Project> {
             task.installationPaths.set(installationPaths)
             task.installationVariables.set(installationVariables)
             task.windowsProgramDirs.add(providers.environmentVariable("ProgramFiles").orElse("C:\\Program Files"))
-            task.windowsProgramDirs.add(providers.environmentVariable("ProgramFiles(x86)").orElse("C:\\Program Files (x86)"))
+            task.windowsProgramDirs.add(
+                providers.environmentVariable("ProgramFiles(x86)").orElse("C:\\Program Files (x86)")
+            )
         }
         project.tasks.withType(UsesEdt::class.java).configureEach { task ->
             task.edtVersion.set(onec.edtVersion)
@@ -72,8 +74,10 @@ class OnecPlugin: Plugin<Project> {
 
 internal fun requireSupportedGradle(current: GradleVersion) {
     if (current.baseVersion < GradleVersion.version(OnecPlugin.MINIMUM_GRADLE_VERSION)) {
-        throw GradleException("The onec plugin requires Gradle ${OnecPlugin.MINIMUM_GRADLE_VERSION} or newer, " +
-            "this was ${current.version}.\nUpgrade the Gradle Wrapper: " +
-            "gradlew wrapper --gradle-version ${OnecPlugin.MINIMUM_GRADLE_VERSION}")
+        throw GradleException(
+            "The onec plugin requires Gradle ${OnecPlugin.MINIMUM_GRADLE_VERSION} or newer, " +
+                "this was ${current.version}.\nUpgrade the Gradle Wrapper: " +
+                "gradlew wrapper --gradle-version ${OnecPlugin.MINIMUM_GRADLE_VERSION}"
+        )
     }
 }

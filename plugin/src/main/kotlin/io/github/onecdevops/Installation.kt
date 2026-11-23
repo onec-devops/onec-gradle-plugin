@@ -50,7 +50,8 @@ internal abstract class InstallationKind {
                 ?.let { Installation(it, home, executable, source) }
         }
 
-    protected fun firstFile(home: File, paths: List<String>): File? = paths.map { File(home, it) }.firstOrNull { it.isFile }
+    protected fun firstFile(home: File, paths: List<String>): File? =
+        paths.map { File(home, it) }.firstOrNull { it.isFile }
 
     private fun compareVersions(a: String, b: String): Int {
         val left = a.split('.').map { it.toInt() }
@@ -68,7 +69,7 @@ internal abstract class InstallationKind {
 }
 
 /** The 1C:Enterprise platform: a directory per version with ibcmd, named after the version. */
-internal object PlatformInstallations: InstallationKind() {
+internal object PlatformInstallations : InstallationKind() {
     override fun executableIn(home: File): File? = firstFile(home, listOf("bin/ibcmd.exe", "ibcmd"))
 
     // A link such as /opt/1cv8/current is named after the version only at its target.
@@ -92,7 +93,7 @@ internal object PlatformInstallations: InstallationKind() {
  * 1C:EDT with 1cedtcli. The 1C:Enterprise installer puts each version in a directory of its own,
  * 1C:EDT Start puts it in the `1cedt` subdirectory of one; the version is in `configuration/config.ini`.
  */
-internal object EdtInstallations: InstallationKind() {
+internal object EdtInstallations : InstallationKind() {
     override fun executableIn(home: File): File? = firstFile(home, listOf("1cedtcli.exe", "1cedtcli"))
 
     override fun versionOf(home: File): String? {

@@ -14,7 +14,7 @@ import java.nio.charset.Charset
 import javax.inject.Inject
 
 @DisableCachingByDefault(because = "Abstract super-class, not to be instantiated directly")
-abstract class IbcmdTask: PlatformTask() {
+abstract class IbcmdTask : PlatformTask() {
     /** Version of the installation in use, so that installing another build triggers a rebuild. */
     @get:Input
     val resolvedPlatformVersion: String
@@ -51,12 +51,16 @@ abstract class IbcmdTask: PlatformTask() {
     }
 
     private fun findIbcmd(): File {
-        val requested = platformVersion.orNull ?: throw InvalidUserDataException("'onec.platformVersion' is not set.\n" +
-            "Set the platform version in the onec block, for example: onec { platformVersion = \"8.3.25\" }")
+        val requested = platformVersion.orNull ?: throw InvalidUserDataException(
+            "'onec.platformVersion' is not set.\n" +
+                "Set the platform version in the onec block, for example: onec { platformVersion = \"8.3.25\" }"
+        )
         val locations = installationLocations()
         val installation = PlatformInstallations.select(requested, PlatformInstallations.discover(locations))
-            ?: throw installationNotFound("1C:Enterprise platform $requested with ibcmd", locations,
-                INSTALLATION_PATHS_PROPERTY, INSTALLATION_VARIABLES_PROPERTY, DEFAULT_INSTALLATION_VARIABLE)
+            ?: throw installationNotFound(
+                "1C:Enterprise platform $requested with ibcmd", locations,
+                INSTALLATION_PATHS_PROPERTY, INSTALLATION_VARIABLES_PROPERTY, DEFAULT_INSTALLATION_VARIABLE
+            )
         return installation.executable
     }
 }
