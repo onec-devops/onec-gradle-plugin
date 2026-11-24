@@ -82,6 +82,6 @@ internal fun decodeProcessOutput(
     fallback: Charset = Charset.forName(System.getProperty("native.encoding") ?: Charset.defaultCharset().name())
 ): String = try {
     Charsets.UTF_8.newDecoder().decode(ByteBuffer.wrap(bytes)).toString()
-} catch (e: CharacterCodingException) {
+} catch (_: CharacterCodingException) {
     String(bytes, fallback)
 }
