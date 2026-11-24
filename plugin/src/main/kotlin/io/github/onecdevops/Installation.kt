@@ -1,7 +1,7 @@
 package io.github.onecdevops
 
 import java.io.File
-import java.util.Properties
+import java.util.*
 
 /** A place to look for installations, with the setting it comes from. */
 internal class InstallationLocation(val path: File, val source: String)

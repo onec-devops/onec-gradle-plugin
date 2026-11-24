@@ -1,8 +1,8 @@
 package io.github.onecdevops
 
-import kotlin.test.assertContains
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertContains
 
 /** Lookup of 1C:EDT; the builds fail before they would start it, so they need neither 1C:EDT nor a real project. */
 class EdtLookupFunctionalTest : FunctionalTest() {

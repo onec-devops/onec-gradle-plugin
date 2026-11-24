@@ -1,15 +1,15 @@
 package io.github.onecdevops
 
+import org.junit.jupiter.api.Assumptions.assumeTrue
+import org.junit.jupiter.api.io.TempDir
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
-import org.junit.jupiter.api.Assumptions.assumeTrue
-import org.junit.jupiter.api.io.TempDir
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
 
 class InstallationTest {
 
