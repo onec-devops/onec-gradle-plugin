@@ -9,5 +9,15 @@ insert_final_newline = true
 max_line_length = 120
 tab_width = 4
 
-[{*.yaml,*.yml}]
+[*.{yaml,yml}]
 indent_size = 2
+
+[*.{json,ts,tsx,css}]
+indent_size = 2
+
+[*.xml]
+insert_final_newline = false
+
+[*.bsl]
+indent_style = tab
+insert_final_newline = false
