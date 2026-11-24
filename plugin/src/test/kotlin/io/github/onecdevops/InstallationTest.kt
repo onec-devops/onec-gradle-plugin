@@ -3,6 +3,7 @@ package io.github.onecdevops
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
 import java.io.IOException
@@ -125,11 +126,12 @@ class InstallationTest {
         assertEquals(emptyList(), parsed)
     }
 
-    @Test
-    fun `finds 1C EDT installed by 1C EDT Start`() {
+    @ParameterizedTest
+    @ValueSource(strings = [".", "1C_EDT 2026.1"])
+    fun `finds 1C EDT installed by 1C EDT Start`(searchPath: String) {
         val cli = installEdt(root.resolve("1C_EDT 2026.1/1cedt"), "2026.1.3")
 
-        val found = findEdt("2026.1", root)
+        val found = findEdt("2026.1", root.resolve(searchPath).normalize())
 
         assertEquals(cli, found?.executable)
         assertEquals("2026.1.3", found?.version)
@@ -145,25 +147,17 @@ class InstallationTest {
         assertEquals(cli, found?.executable)
     }
 
-    @Test
-    fun `accepts a location that is a 1C EDT Start installation itself`() {
-        val cli = installEdt(root.resolve("1C_EDT 2026.1/1cedt"), "2026.1.3")
-
-        val found = findEdt("2026.1", root.resolve("1C_EDT 2026.1"))
-
-        assertEquals(cli, found?.executable)
-    }
-
-    @Test
-    fun `finds the newest 1C EDT for a leading part of the version`() {
+    @ParameterizedTest
+    @CsvSource("2026.1, 2026.1.3", "2026.2, 2026.2.2")
+    fun `finds the newest 1C EDT for a leading part of the version`(requested: String, expectedVersion: String) {
         installEdt(root.resolve("a"), "2025.2.6")
         installEdt(root.resolve("b"), "2026.1.3")
         installEdt(root.resolve("c"), "2026.1.1")
         installEdt(root.resolve("d"), "2026.2.2")
 
-        val found = findEdt("2026.1", root)
+        val found = findEdt(requested, root)
 
-        assertEquals("2026.1.3", found?.version)
+        assertEquals(expectedVersion, found?.version)
     }
 
     @Test
