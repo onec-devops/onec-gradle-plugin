@@ -1,11 +1,7 @@
 package io.github.onecdevops
 
-import kotlin.test.assertContains
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
-import kotlin.test.Test
 import org.gradle.testkit.runner.TaskOutcome
+import kotlin.test.*
 
 class BuildFunctionalTest : FunctionalTest() {
 

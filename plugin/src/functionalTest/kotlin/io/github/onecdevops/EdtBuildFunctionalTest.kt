@@ -3,12 +3,7 @@ package io.github.onecdevops
 import java.io.File
 import java.nio.file.Files
 import java.util.concurrent.TimeUnit
-import kotlin.test.assertContains
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
-import kotlin.test.BeforeTest
-import kotlin.test.Test
+import kotlin.test.*
 
 /**
  * Builds of 1C:EDT projects; they call the real 1cedtcli, which a machine without 1C:EDT Start finds through EDT_HOME.

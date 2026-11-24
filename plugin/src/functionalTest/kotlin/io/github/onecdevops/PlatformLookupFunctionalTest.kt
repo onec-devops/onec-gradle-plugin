@@ -1,7 +1,7 @@
 package io.github.onecdevops
 
-import kotlin.test.assertContains
 import kotlin.test.Test
+import kotlin.test.assertContains
 
 class PlatformLookupFunctionalTest : FunctionalTest() {
 
